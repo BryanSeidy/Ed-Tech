@@ -73,7 +73,7 @@ class CourseController extends Controller
      */
     public function show(Course $course)
     {
-        $course->load(['instructor', 'modules.lessons', 'quizzes']);
+        $course->load(['instructor', 'modules.lessons']);
 
         return response()->json($course);
     }

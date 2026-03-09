@@ -14,13 +14,13 @@ use Illuminate\Validation\Rule;
 class CourseController extends Controller
 {
     /**
-     * Display a listing of the courses.
+     * Display a listing of the courses. liste des cours disponibles pour les utilisateurs et les instructeurs
      */
     public function index(Request $request)
     {
         $query = Course::with('instructor');
 
-        // Filter by published status
+        // Filter by published status filtrer les cours en fonction de leur statut de publication
         if ($request->has('published')) {
             $query->where('is_published', $request->boolean('published'));
         }
@@ -30,7 +30,7 @@ class CourseController extends Controller
             $query->where('instructor_id', $request->instructor_id);
         }
 
-        // Search by title or description
+        // Search by title or description rechercher des cours par titre ou description
         if ($request->has('search')) {
             $search = $request->search;
             $query->where(function ($q) use ($search) {
@@ -45,7 +45,7 @@ class CourseController extends Controller
     }
 
     /**
-     * Store a newly created course.
+     * Store a newly created course. ajouter un nouveau cours par un instructeur
      */
     public function store(Request $request)
     {
@@ -69,7 +69,7 @@ class CourseController extends Controller
     }
 
     /**
-     * Display the specified course.
+     * Display the specified course. afficher les détails d'un cours spécifique, y compris les modules, les leçons et les quiz associés
      */
     public function show(Course $course)
     {
@@ -79,11 +79,11 @@ class CourseController extends Controller
     }
 
     /**
-     * Update the specified course.
+     * Update the specified course. mise à jour des détails d'un cours par l'instructeur qui l'a créé
      */
     public function update(Request $request, Course $course)
     {
-        // Check if user is the instructor
+        // Check if user is the instructor de l'instructeur qui a créé le cours est autorisé à le mettre à jour
         if ($course->instructor_id !== Auth::id()) {
             return response()->json(['message' => 'Unauthorized'], 403);
         }
@@ -98,7 +98,7 @@ class CourseController extends Controller
         $data = $request->only(['title', 'description', 'is_published']);
 
         if ($request->hasFile('thumbnail')) {
-            // Delete old thumbnail
+            // Delete old thumbnail suppression de l'ancienne miniature si elle existe
             if ($course->thumbnail) {
                 Storage::disk('public')->delete($course->thumbnail);
             }
@@ -111,7 +111,7 @@ class CourseController extends Controller
     }
 
     /**
-     * Remove the specified course.
+     * Remove the specified course. suppression d'un cours par l'instructeur qui l'a créé, y compris la suppression de la miniature associée et des relations avec les modules, les leçons et les quiz
      */
     public function destroy(Course $course)
     {
@@ -131,7 +131,7 @@ class CourseController extends Controller
     }
 
     /**
-     * Enroll a user in a course.
+     * Enroll a user in a course. Enregistrement d'un utilisateur dans un cours, avec vérification que le cours est publié et que l'utilisateur n'est pas déjà inscrit
      */
     public function enroll(Course $course)
     {
@@ -141,7 +141,7 @@ class CourseController extends Controller
 
         $user = Auth::user();
 
-        // Check if already enrolled
+        // Check if already enrolled si l'utilisateur est déjà inscrit dans ce cours
         if ($course->enrollments()->where('user_id', $user->id)->exists()) {
             return response()->json(['message' => 'Already enrolled in this course'], 400);
         }
@@ -155,7 +155,7 @@ class CourseController extends Controller
     }
 
     /**
-     * Unenroll a user from a course.
+     * Unenroll a user from a course. desinscription d'un utilisateur d'un cours, avec vérification que l'utilisateur est actuellement inscrit dans le cours avant de supprimer l'inscription
      */
     public function unenroll(Course $course)
     {
@@ -173,7 +173,7 @@ class CourseController extends Controller
     }
 
     /**
-     * Get courses for the authenticated user.
+     * Get courses for the authenticated user. Récupération des cours auxquels l'utilisateur authentifié est inscrit, avec la possibilité de filtrer par statut de publication et de rechercher par titre du cours
      */
     public function myCourses(Request $request)
     {
@@ -199,7 +199,7 @@ class CourseController extends Controller
     }
 
     /**
-     * Get courses created by the authenticated instructor.
+     * Get courses created by the authenticated instructor. Récupération des cours créés par l'instructeur authentifié, avec la possibilité de filtrer par statut de publication
      */
     public function myCreatedCourses(Request $request)
     {
@@ -217,7 +217,7 @@ class CourseController extends Controller
     }
 
     /**
-     * Publish a course.
+     * Publish a course. Publication d'un cours par l'instructeur qui l'a créé, avec vérification que seul l'instructeur peut publier le cours et que le cours est mis à jour avec le statut de publication approprié
      */
     public function publish(Course $course)
     {
@@ -231,7 +231,7 @@ class CourseController extends Controller
     }
 
     /**
-     * Unpublish a course.
+     * Unpublish a course. dépublication d'un cours par l'instructeur qui l'a créé, avec vérification que seul l'instructeur peut dépublier le cours et que le cours est mis à jour avec le statut de publication approprié
      */
     public function unpublish(Course $course)
     {
@@ -245,7 +245,7 @@ class CourseController extends Controller
     }
 
     /**
-     * Get course statistics for instructor.
+     * Get course statistics for instructor. recupération des statistiques d'un cours pour l'instructeur qui l'a créé, y compris le nombre total d'inscriptions, de modules, de leçons et de quiz associés au cours, avec vérification que seul l'instructeur peut accéder à ces statistiques
      */
     public function statistics(Course $course)
     {

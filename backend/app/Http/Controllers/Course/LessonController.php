@@ -13,11 +13,11 @@ use Illuminate\Support\Facades\Storage;
 class LessonController extends Controller
 {
     /**
-     * Display a listing of lessons for a module.
+     * Display a listing of lessons for a module. Affichage de la liste des leçons d'un module donné, accessible uniquement aux utilisateurs inscrits dans le cours ou à l'instructeur du cours, avec des détails sur chaque leçon, y compris le titre, la position, la durée, et le statut de progression de l'utilisateur pour chaque leçon (complétée ou non)
      */
     public function index(Request $request, Module $module)
     {
-        // Check if user is enrolled in the course or is the instructor
+        // Check if user is enrolled in the course or is the instructor. Verification que l'utilisateur est inscrit dans le cours ou est l'instructeur du cours
         $course = $module->course;
         $user = Auth::user();
 
@@ -36,13 +36,13 @@ class LessonController extends Controller
     }
 
     /**
-     * Store a newly created lesson.
+     * Store a newly created lesson. Ajouter une nouvelle lecon
      */
     public function store(Request $request, Module $module)
     {
         $course = $module->course;
 
-        // Check if user is the instructor
+        // Check if user is the instructor Verifier que c'est l'instructeur du cour qui est connecter
         if ($course->instructor_id !== Auth::id()) {
             return response()->json(['message' => 'Unauthorized'], 403);
         }
@@ -55,7 +55,7 @@ class LessonController extends Controller
             'position' => 'required|integer|min:1',
         ]);
 
-        // Check if position is unique within the module
+        // Check if position is unique within the module // Verifier que la position est unique dans le module
         if ($module->lessons()->where('position', $request->position)->exists()) {
             return response()->json(['message' => 'Position already taken'], 400);
         }
@@ -68,14 +68,14 @@ class LessonController extends Controller
     }
 
     /**
-     * Display the specified lesson.
+     * Display the specified lesson. Afficher les détails d'une leçon spécifique, accessible uniquement aux utilisateurs inscrits dans le cours ou à l'instructeur du cours, avec des informations telles que le titre de la leçon, le contenu, l'URL de la vidéo, la durée, et le statut de progression de l'utilisateur pour cette leçon (complétée ou non)
      */
     public function show(Lesson $lesson)
     {
         $course = $lesson->course;
         $user = Auth::user();
 
-        // Check if user is enrolled or is the instructor
+        // Check if user is enrolled or is the instructor // Verifier que l'utilisateur est inscrit dans le cours ou est l'instructeur du cours
         if ($course->instructor_id !== $user->id && !$course->enrollments()->where('user_id', $user->id)->exists()) {
             return response()->json(['message' => 'Unauthorized'], 403);
         }
@@ -88,13 +88,13 @@ class LessonController extends Controller
     }
 
     /**
-     * Update the specified lesson.
+     * Update the specified lesson. Mise a jour d' une lecon specifique
      */
     public function update(Request $request, Lesson $lesson)
     {
         $course = $lesson->course;
 
-        // Check if user is the instructor
+        // Check if user is the instructor // verifier que c'est l'instructeur de la lecon qui est connecter
         if ($course->instructor_id !== Auth::id()) {
             return response()->json(['message' => 'Unauthorized'], 403);
         }
@@ -107,7 +107,7 @@ class LessonController extends Controller
             'position' => 'sometimes|required|integer|min:1',
         ]);
 
-        // Check position uniqueness if updating position
+        // Check position uniqueness if updating position // Verifier que la position est unique si elle est mise a jour
         if ($request->has('position') && $request->position !== $lesson->position) {
             if ($lesson->module->lessons()->where('position', $request->position)->where('id', '!=', $lesson->id)->exists()) {
                 return response()->json(['message' => 'Position already taken'], 400);
@@ -122,13 +122,13 @@ class LessonController extends Controller
     }
 
     /**
-     * Remove the specified lesson.
+     * Remove the specified lesson. Supprimer une lecon specifique, accessible uniquement à l'instructeur du cours, avec la suppression de toutes les progressions associées à cette leçon pour les utilisateurs inscrits
      */
     public function destroy(Lesson $lesson)
     {
         $course = $lesson->course;
 
-        // Check if user is the instructor
+        // Check if user is the instructor // verifier que c'est l'instructeur de la lecon qui est connecter
         if ($course->instructor_id !== Auth::id()) {
             return response()->json(['message' => 'Unauthorized'], 403);
         }
@@ -139,7 +139,7 @@ class LessonController extends Controller
     }
 
     /**
-     * Mark lesson as completed for the authenticated user.
+     * Mark lesson as completed for the authenticated user. Marquer une leçon comme complétée pour l'utilisateur authentifié, accessible uniquement aux utilisateurs inscrits dans le cours, avec la création ou la mise à jour d'une progression pour cette leçon indiquant qu'elle est complétée, et la date de complétion
      */
     public function markCompleted(Lesson $lesson)
     {
@@ -166,7 +166,7 @@ class LessonController extends Controller
     }
 
     /**
-     * Mark lesson as not completed for the authenticated user.
+     * Mark lesson as not completed for the authenticated user. Marquer une leçon comme non complétée pour l'utilisateur authentifié, accessible uniquement aux utilisateurs inscrits dans le cours, avec la création ou la mise à jour d'une progression pour cette leçon indiquant qu'elle n'est pas complétée, et la suppression de la date de complétion
      */
     public function markIncomplete(Lesson $lesson)
     {
@@ -193,7 +193,7 @@ class LessonController extends Controller
     }
 
     /**
-     * Get user's progress for a specific lesson.
+     * Get user's progress for a specific lesson. Obtenir la progression de l'utilisateur pour une leçon spécifique, accessible uniquement aux utilisateurs inscrits dans le cours, avec une réponse indiquant si la leçon est complétée ou non, et la date de complétion si elle est complétée
      */
     public function getProgress(Lesson $lesson)
     {
@@ -209,14 +209,14 @@ class LessonController extends Controller
     }
 
     /**
-     * Get next lesson in the module.
+     * Get next lesson in the module. Obtenir la leçon suivante dans le module, accessible uniquement aux utilisateurs inscrits dans le cours ou à l'instructeur du cours, avec une réponse contenant les détails de la leçon suivante basée sur la position de la leçon actuelle, ou un message indiquant qu'il n'y a pas de leçon suivante disponible
      */
     public function nextLesson(Lesson $lesson)
     {
         $course = $lesson->course;
         $user = Auth::user();
 
-        // Check if user is enrolled or instructor
+        // Check if user is enrolled or instructor Verifier si l'utilisateur est inscrit ou est l'instructeur du cours
         if ($course->instructor_id !== $user->id && !$course->enrollments()->where('user_id', $user->id)->exists()) {
             return response()->json(['message' => 'Unauthorized'], 403);
         }
@@ -234,14 +234,14 @@ class LessonController extends Controller
     }
 
     /**
-     * Get previous lesson in the module.
+     * Get previous lesson in the module. Obtenir la leçon précédente dans le module, accessible uniquement aux utilisateurs inscrits dans le cours ou à l'instructeur du cours, avec une réponse contenant les détails de la leçon précédente basée sur la position de la leçon actuelle, ou un message indiquant qu'il n'y a pas de leçon précédente disponible
      */
     public function previousLesson(Lesson $lesson)
     {
         $course = $lesson->course;
         $user = Auth::user();
 
-        // Check if user is enrolled or instructor
+        // Check if user is enrolled or instructor verifier si l'utilisateur est inscrit ou est l'instructeur du cours
         if ($course->instructor_id !== $user->id && !$course->enrollments()->where('user_id', $user->id)->exists()) {
             return response()->json(['message' => 'Unauthorized'], 403);
         }
@@ -259,13 +259,13 @@ class LessonController extends Controller
     }
 
     /**
-     * Reorder lessons in a module.
+     * Reorder lessons in a module. Réorganiser les leçons dans un module, accessible uniquement à l'instructeur du cours, avec la possibilité de fournir une liste d'IDs de leçons et leurs nouvelles positions, et une réponse indiquant que les leçons ont été réorganisées avec succès ou des erreurs si les positions ne sont pas valides ou si certaines leçons ne font pas partie du module
      */
     public function reorder(Request $request, Module $module)
     {
         $course = $module->course;
 
-        // Check if user is the instructor
+        // Check if user is the instructor verifier que c'est l'instructeur du cours qui est connecter
         if ($course->instructor_id !== Auth::id()) {
             return response()->json(['message' => 'Unauthorized'], 403);
         }
@@ -276,7 +276,7 @@ class LessonController extends Controller
             'lessons.*.position' => 'required|integer|min:1',
         ]);
 
-        // Validate that all lessons belong to the module
+        // Validate that all lessons belong to the module // Valider que toutes les leçons appartiennent au module
         $lessonIds = collect($request->lessons)->pluck('id');
         $moduleLessonIds = $module->lessons()->pluck('id');
 
@@ -284,7 +284,7 @@ class LessonController extends Controller
             return response()->json(['message' => 'Some lessons do not belong to this module'], 400);
         }
 
-        // Update positions
+        // Update positions // Mettre à jour les positions
         foreach ($request->lessons as $lessonData) {
             $module->lessons()
                 ->where('id', $lessonData['id'])

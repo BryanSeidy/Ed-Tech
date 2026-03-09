@@ -11,7 +11,10 @@ use Illuminate\Support\Facades\Auth;
 class AttemptController extends Controller
 {
     /**
-     * Display a listing of attempts for a quiz (instructor only).
+     * Display a listing of attempts for a quiz (instructor only). Affichage d'une liste des tentatives pour un quiz,
+     *  accessible uniquement à l'instructeur du cours, avec une vérification de l'autorisation de l'utilisateur, une 
+     * récupération des tentatives avec les informations de l'utilisateur qui a tenté le quiz, et une pagination des
+     *  résultats pour une meilleure gestion des données.
      */
     public function index(Quiz $quiz)
     {
@@ -31,14 +34,14 @@ class AttemptController extends Controller
     }
 
     /**
-     * Display the specified attempt.
+     * Display the specified attempt. Affiche d'une tentative specifique
      */
     public function show(Attempt $attempt)
     {
         $user = Auth::user();
         $course = $attempt->course;
 
-        // Check if user is the attempt owner or the course instructor
+        // Check if user is the attempt owner or the course instructor verifier que c'est un instructeur qui est connecter
         if ($attempt->user_id !== $user->id && $course->instructor_id !== $user->id) {
             return response()->json(['message' => 'Unauthorized'], 403);
         }
@@ -49,7 +52,7 @@ class AttemptController extends Controller
     }
 
     /**
-     * Start a new quiz attempt.
+     * Start a new quiz attempt. Nouvelle tentative de quizz
      */
     public function store(Request $request, Quiz $quiz)
     {
@@ -84,7 +87,7 @@ class AttemptController extends Controller
     }
 
     /**
-     * Submit quiz attempt with answers and calculate score.
+     * Submit quiz attempt with answers and calculate score. soumettre
      */
     public function update(Request $request, Attempt $attempt)
     {
@@ -181,6 +184,7 @@ class AttemptController extends Controller
      */
     public function myAttempts(Request $request)
     {
+        /** @var \App\Models\User $user */
         $user = Auth::user();
 
         $query = $user->attempts()->with(['quiz.course:id,title']);

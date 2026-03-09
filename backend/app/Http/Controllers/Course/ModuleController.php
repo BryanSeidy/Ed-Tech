@@ -11,7 +11,7 @@ use Illuminate\Support\Facades\Auth;
 class ModuleController extends Controller
 {
     /**
-     * Display a listing of modules for a course.
+     * Display a listing of modules for a course. Affichage des cours avec leurs modules
      */
     public function index(Course $course)
     {
@@ -33,42 +33,42 @@ class ModuleController extends Controller
     }
 
     /**
-     * Store a newly created module.
+     * Store a newly created module. Creation des nouveaux modules
      */
-    public function store(Request $request, Course $course)
+    public function store(Request $request, Module $course)
     {
-        // Check if user is the instructor
+        // Check if user is the instructor verifier que c'est l'instructeur du cours qui est connecter
         if ($course->instructor_id !== Auth::id()) {
             return response()->json(['message' => 'Unauthorized'], 403);
         }
 
         $request->validate([
-            'title' => 'required|string|max:255',
-            'description' => 'nullable|string',
+            'course_id' => 'required|integer|exists:courses,id',
+            'title' => 'nullable|string|max:255',
             'position' => 'required|integer|min:1',
         ]);
 
-        // Check if position is unique within the course
+        // Check if position is unique within the course valider que la position est unique dans le cours
         if ($course->modules()->where('position', $request->position)->exists()) {
             return response()->json(['message' => 'Position already taken'], 400);
         }
 
         $module = $course->modules()->create($request->only([
-            'title', 'description', 'position'
+            'course_id', 'title', 'position'
         ]));
 
         return response()->json($module, 201);
     }
 
     /**
-     * Display the specified module.
+     * Display the specified module. afficher les modules specifique
      */
     public function show(Module $module)
     {
         $course = $module->course;
         $user = Auth::user();
 
-        // Check if user is enrolled or is the instructor
+        // Check if user is enrolled or is the instructor verifier si l'utilisateur est inscrit ou est l'instructeur du module
         if ($course->instructor_id !== $user->id && !$course->enrollments()->where('user_id', $user->id)->exists()) {
             return response()->json(['message' => 'Unauthorized'], 403);
         }
@@ -87,24 +87,24 @@ class ModuleController extends Controller
     }
 
     /**
-     * Update the specified module.
+     * Update the specified module. mise à jour des modules, accessible uniquement à l'instructeur du cours, avec la possibilité de mettre à jour le titre, la description et la position du module, et une validation pour s'assurer que la nouvelle position n'entre pas en conflit avec les autres modules du même cours
      */
     public function update(Request $request, Module $module)
     {
         $course = $module->course;
 
-        // Check if user is the instructor
+        // Check if user is the instructor verifier que c'est l'instructeur du cours qui est connecter
         if ($course->instructor_id !== Auth::id()) {
             return response()->json(['message' => 'Unauthorized'], 403);
         }
 
         $request->validate([
-            'title' => 'sometimes|required|string|max:255',
-            'description' => 'nullable|string',
+            'course_id' => 'sometimes|required|string|max:255',
+            'title' => 'nullable|string',
             'position' => 'sometimes|required|integer|min:1',
         ]);
 
-        // Check position uniqueness if updating position
+        // Check position uniqueness if updating position valider que la position est unique si elle est mise à jour
         if ($request->has('position') && $request->position !== $module->position) {
             if ($course->modules()->where('position', $request->position)->where('id', '!=', $module->id)->exists()) {
                 return response()->json(['message' => 'Position already taken'], 400);
@@ -112,20 +112,20 @@ class ModuleController extends Controller
         }
 
         $module->update($request->only([
-            'title', 'description', 'position'
+            'course_id', 'title', 'position'
         ]));
 
         return response()->json($module);
     }
 
     /**
-     * Remove the specified module.
+     * Remove the specified module. Suppression d'un module, accessible uniquement à l'instructeur du cours, avec la suppression en cascade de toutes les leçons associées au module, et une réponse indiquant que le module a été supprimé avec succès ou une erreur si l'utilisateur n'est pas autorisé à supprimer le module
      */
     public function destroy(Module $module)
     {
         $course = $module->course;
 
-        // Check if user is the instructor
+        // Check if user is the instructor verifier que c'est l'instructeur du cours qui est connecter
         if ($course->instructor_id !== Auth::id()) {
             return response()->json(['message' => 'Unauthorized'], 403);
         }
@@ -136,11 +136,11 @@ class ModuleController extends Controller
     }
 
     /**
-     * Reorder modules in a course.
+     * Reorder modules in a course. Réorganiser les modules dans un cours, accessible uniquement à l'instructeur du cours, avec la possibilité de fournir une liste d'IDs de modules et leurs nouvelles positions, et une réponse indiquant que les modules ont été réorganisés avec succès ou des erreurs si les positions ne sont pas valides ou si certains modules ne font pas partie du cours
      */
     public function reorder(Request $request, Course $course)
     {
-        // Check if user is the instructor
+        // Check if user is the instructor verifier que c'est l'instructeur du cours qui est connecter
         if ($course->instructor_id !== Auth::id()) {
             return response()->json(['message' => 'Unauthorized'], 403);
         }
@@ -151,7 +151,7 @@ class ModuleController extends Controller
             'modules.*.position' => 'required|integer|min:1',
         ]);
 
-        // Validate that all modules belong to the course
+        // Validate that all modules belong to the course Valider que tous les modules appartiennent au cours
         $moduleIds = collect($request->modules)->pluck('id');
         $courseModuleIds = $course->modules()->pluck('id');
 
@@ -159,7 +159,7 @@ class ModuleController extends Controller
             return response()->json(['message' => 'Some modules do not belong to this course'], 400);
         }
 
-        // Update positions
+        // Update positions     Mettre à jour les positions
         foreach ($request->modules as $moduleData) {
             $course->modules()
                 ->where('id', $moduleData['id'])
@@ -170,13 +170,13 @@ class ModuleController extends Controller
     }
 
     /**
-     * Get module statistics for instructor.
+     * Get module statistics for instructor. recuperer les statistiques d'un module pour l'instructeur, avec des données telles que le nombre total de leçons, la durée totale du module, le nombre de leçons complétées par les étudiants, et le taux de complétion moyen pour le module, accessible uniquement à l'instructeur du cours
      */
     public function statistics(Module $module)
     {
         $course = $module->course;
 
-        // Check if user is the instructor
+        // Check if user is the instructor verifier que c'est l'instructeur du cours qui est connecter
         if ($course->instructor_id !== Auth::id()) {
             return response()->json(['message' => 'Unauthorized'], 403);
         }
@@ -196,14 +196,14 @@ class ModuleController extends Controller
     }
 
     /**
-     * Get next module in the course.
+     * Get next module in the course. Obtenir le module suivant dans le cours, accessible uniquement aux utilisateurs inscrits dans le cours ou à l'instructeur du cours, avec une réponse contenant les détails du module suivant basée sur la position du module actuel, ou un message indiquant qu'il n'y a pas de module suivant disponible
      */
     public function nextModule(Module $module)
     {
         $course = $module->course;
         $user = Auth::user();
 
-        // Check if user is enrolled or instructor
+        // Check if user is enrolled or instructor Verifier si l'utilisateur est inscrit ou est l'instructeur du cours
         if ($course->instructor_id !== $user->id && !$course->enrollments()->where('user_id', $user->id)->exists()) {
             return response()->json(['message' => 'Unauthorized'], 403);
         }
@@ -221,14 +221,14 @@ class ModuleController extends Controller
     }
 
     /**
-     * Get previous module in the course.
+     * Get previous module in the course. Obtenir le module précédent dans le cours, accessible uniquement aux utilisateurs inscrits dans le cours ou à l'instructeur du cours, avec une réponse contenant les détails du module précédent basée sur la position du module actuel, ou un message indiquant qu'il n'y a pas de module précédent disponible
      */
     public function previousModule(Module $module)
     {
         $course = $module->course;
         $user = Auth::user();
 
-        // Check if user is enrolled or instructor
+        // Check if user is enrolled or instructor Verifier si l'utilisateur est inscrit ou est l'instructeur du cours
         if ($course->instructor_id !== $user->id && !$course->enrollments()->where('user_id', $user->id)->exists()) {
             return response()->json(['message' => 'Unauthorized'], 403);
         }
@@ -246,7 +246,8 @@ class ModuleController extends Controller
     }
 
     /**
-     * Get module progress for authenticated user.
+     * Get module progress for authenticated user. Obtenir la progression du module pour l'utilisateur authentifié, avec des données telles que le nombre
+     * total de leçons, le nombre de leçons complétées, le pourcentage de complétion, et si le module est considéré comme complété ou non, accessible uniquement aux utilisateurs inscrits dans le cours
      */
     public function progress(Module $module)
     {
@@ -276,7 +277,7 @@ class ModuleController extends Controller
     }
 
     /**
-     * Calculate average completion rate for a module.
+     * Calculate average completion rate for a module. Calculer le taux de complétion moyen pour un module, en fonction du nombre total de leçons dans le module, du nombre de leçons complétées par tous les étudiants inscrits dans le cours, et du nombre total d'inscriptions au cours, avec une formule pour calculer le pourcentage de complétion moyen et une gestion des cas où il n'y a pas d'inscriptions ou de leçons pour éviter la division par zéro
      */
     private function calculateAverageCompletionRate(Module $module)
     {

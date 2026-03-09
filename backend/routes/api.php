@@ -19,6 +19,11 @@ Route::middleware('auth:sanctum')->group(function () {
     Route::apiResource('courses', CourseController::class);
 
     // Additional course routes
+    Route::get('courses/{course}/course', [CourseController::class, 'index']);
+    Route::post('courses/{course}/course', [CourseController::class, 'store']);
+    Route::get('courses/{course}', [CourseController::class, 'show']);
+    Route::put('courses/{course}', [CourseController::class, 'update']);
+    Route::delete('courses/{course}', [CourseController::class, 'destroy']);
     Route::post('courses/{course}/enroll', [CourseController::class, 'enroll']);
     Route::delete('courses/{course}/enroll', [CourseController::class, 'unenroll']);
     Route::get('courses/my/enrolled', [CourseController::class, 'myCourses']);

@@ -16,7 +16,7 @@ class User extends Authenticatable
         'name',
         'email',
         'password',
-        'avatar',
+        'role'
     ];
 
     protected $hidden = [
@@ -32,18 +32,40 @@ class User extends Authenticatable
         ];
     }
 
-    public function coursesAsInstructor(): HasMany
+    /*
+    |--------------------------------------------------------------------------
+    | RELATIONS ELOQUENT
+    |--------------------------------------------------------------------------
+    */
+
+    // Enseignant : un user peut créer plusieurs cours
+    public function coursesTeaching()
     {
-        return $this->hasMany(Course::class, 'instructor_id');
+        return $this->hasMany(Course::class, 'teacher_id');
     }
 
-    public function enrollments(): HasMany
+    // Inscriptions aux cours
+    public function enrollments()
     {
         return $this->hasMany(Enrollment::class);
     }
 
-    public function enrolledCourses(): BelongsToMany
+    // Cours suivis par l'étudiant
+    public function courses()
     {
-        return $this->belongsToMany(Course::class, 'enrollments')->withPivot('enrolled_at');
+        return $this->belongsToMany(Course::class, 'enrollments');
     }
+
+    // Résultats des évaluations
+    public function results()
+    {
+        return $this->hasMany(Result::class);
+    }
+
+    // Certificats obtenus
+    public function certificates()
+    {
+        return $this->hasMany(Certificate::class);
+    }
+
 }

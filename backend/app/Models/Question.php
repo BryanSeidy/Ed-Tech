@@ -13,11 +13,11 @@ class Question extends Model
 
     public $timestamps = false;
 
-    protected $fillable = ['quiz_id', 'question_text', 'type'];
+    protected $fillable = ['evaluation_id', 'question', 'type'];
 
-    public function quiz(): BelongsTo
+    public function evaluation(): BelongsTo
     {
-        return $this->belongsTo(Quiz::class);
+        return $this->belongsTo(Evaluation::class);
     }
 
     public function answers(): HasMany

@@ -4,9 +4,6 @@ namespace App\Models;
 
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
-use Illuminate\Database\Eloquent\Relations\BelongsTo;
-use Illuminate\Database\Eloquent\Relations\BelongsToMany;
-use Illuminate\Database\Eloquent\Relations\HasMany;
 
 class Course extends Model
 {
@@ -15,32 +12,42 @@ class Course extends Model
     protected $fillable = [
         'title',
         'description',
-        'thumbnail',
-        'instructor_id',
-        'is_published',
+        'teacher_id'
     ];
 
-    protected $casts = [
-        'is_published' => 'boolean',
-    ];
-
-    public function instructor(): BelongsTo
+    // Enseignant du cours
+    public function teacher()
     {
-        return $this->belongsTo(User::class, 'instructor_id');
+        return $this->belongsTo(User::class, 'teacher_id');
     }
 
-    public function modules(): HasMany
+    // Modules du cours
+    public function modules()
     {
-        return $this->hasMany(Module::class)->orderBy('position');
+        return $this->hasMany(Module::class);
     }
 
-    public function enrollments(): HasMany
+    // Sessions de classe virtuelle
+    public function sessions()
     {
-        return $this->hasMany(Enrollment::class);
+        return $this->hasMany(Session::class);
     }
 
-    public function students(): BelongsToMany
+    // Evaluations
+    public function evaluations()
     {
-        return $this->belongsToMany(User::class, 'enrollments')->withPivot('enrolled_at');
+        return $this->hasMany(Evaluation::class);
+    }
+
+    // Etudiants inscrits
+    public function students()
+    {
+        return $this->belongsToMany(User::class, 'enrollments');
+    }
+
+    // Certificats
+    public function certificates()
+    {
+        return $this->hasMany(Certificate::class);
     }
 }

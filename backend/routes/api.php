@@ -158,3 +158,74 @@ Route::middleware('auth:sanctum')->group(function () {
     Route::delete('answers/{answer}/correct', [AnswersController::class, 'unsetCorrect']);
     Route::get('questions/{question}/correct-answer', [AnswersController::class, 'correctAnswer']);
 });
+
+// Certificate routes
+Route::middleware('auth:sanctum')->group(function () {
+    // Certificate management (admin/instructor)
+    Route::get('certificates', [App\Http\Controllers\CertificateController::class, 'index']);
+    Route::post('certificates', [App\Http\Controllers\CertificateController::class, 'store']);
+    Route::get('certificates/{certificate}', [App\Http\Controllers\CertificateController::class, 'show']);
+    Route::put('certificates/{certificate}', [App\Http\Controllers\CertificateController::class, 'update']);
+    Route::delete('certificates/{certificate}', [App\Http\Controllers\CertificateController::class, 'destroy']);
+
+    // Certificate generation and verification
+    Route::post('certificates/generate', [App\Http\Controllers\CertificateController::class, 'generate']);
+    Route::get('certificates/{certificate}/download', [App\Http\Controllers\CertificateController::class, 'download']);
+    Route::post('certificates/verify', [App\Http\Controllers\CertificateController::class, 'verify']);
+
+    // User certificate access
+    Route::get('my-certificates', [App\Http\Controllers\CertificateController::class, 'myCertificates']);
+    Route::get('courses/{course}/certificate/check-eligibility', [App\Http\Controllers\CertificateController::class, 'checkEligibility']);
+});
+
+// Progress routes
+Route::middleware('auth:sanctum')->group(function () {
+    // Progress management
+    Route::get('progress', [App\Http\Controllers\ProgressController::class, 'index']);
+    Route::post('progress', [App\Http\Controllers\ProgressController::class, 'store']);
+    Route::get('progress/{progress}', [App\Http\Controllers\ProgressController::class, 'show']);
+    Route::put('progress/{progress}', [App\Http\Controllers\ProgressController::class, 'update']);
+    Route::delete('progress/{progress}', [App\Http\Controllers\ProgressController::class, 'destroy']);
+
+    // Progress actions
+    Route::post('progress/mark-completed', [App\Http\Controllers\ProgressController::class, 'markCompleted']);
+    Route::post('progress/mark-incomplete', [App\Http\Controllers\ProgressController::class, 'markIncomplete']);
+    Route::post('progress/bulk-update', [App\Http\Controllers\ProgressController::class, 'bulkUpdate']);
+
+    // Progress statistics and reports
+    Route::get('progress/user/{user}', [App\Http\Controllers\ProgressController::class, 'getUserProgress']);
+    Route::get('courses/{course}/progress', [App\Http\Controllers\ProgressController::class, 'getCourseProgress']);
+    Route::post('courses/{course}/progress/reset', [App\Http\Controllers\ProgressController::class, 'resetCourseProgress']);
+
+    // User progress access
+    Route::get('my-progress', [App\Http\Controllers\ProgressController::class, 'myProgress']);
+});
+
+// User routes
+Route::middleware('auth:sanctum')->group(function () {
+    // User management (admin)
+    Route::get('users', [App\Http\Controllers\User\UserController::class, 'index']);
+    Route::post('users', [App\Http\Controllers\User\UserController::class, 'store']);
+    Route::get('users/{user}', [App\Http\Controllers\User\UserController::class, 'show']);
+    Route::put('users/{user}', [App\Http\Controllers\User\UserController::class, 'update']);
+    Route::delete('users/{user}', [App\Http\Controllers\User\UserController::class, 'destroy']);
+
+    // User profile management
+    Route::get('profile', [App\Http\Controllers\User\UserController::class, 'profile']);
+    Route::put('profile', [App\Http\Controllers\User\UserController::class, 'updateProfile']);
+    Route::post('profile/change-password', [App\Http\Controllers\User\UserController::class, 'changePassword']);
+
+    // User data access
+    Route::get('users/{user}/courses', [App\Http\Controllers\User\UserController::class, 'getUserCourses']);
+    Route::get('users/{user}/enrollments', [App\Http\Controllers\User\UserController::class, 'getUserEnrollments']);
+    Route::get('users/{user}/progress', [App\Http\Controllers\User\UserController::class, 'getUserProgress']);
+    Route::get('users/{user}/certificates', [App\Http\Controllers\User\UserController::class, 'getUserCertificates']);
+    Route::get('users/{user}/statistics', [App\Http\Controllers\User\UserController::class, 'getUserStatistics']);
+
+    // Authenticated user access
+    Route::get('dashboard', [App\Http\Controllers\User\UserController::class, 'dashboard']);
+    Route::get('my-courses', [App\Http\Controllers\User\UserController::class, 'myCourses']);
+    Route::get('my-enrollments', [App\Http\Controllers\User\UserController::class, 'myEnrollments']);
+    Route::get('my-certificates', [App\Http\Controllers\User\UserController::class, 'myCertificates']);
+    Route::get('my-statistics', [App\Http\Controllers\User\UserController::class, 'myStatistics']);
+});

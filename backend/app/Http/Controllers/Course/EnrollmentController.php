@@ -7,6 +7,7 @@ use App\Models\Course;
 use App\Models\Enrollment;
 use App\Models\User;
 use Illuminate\Http\Request;
+use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Support\Facades\Auth;
 
 class EnrollmentController extends Controller
@@ -103,6 +104,7 @@ class EnrollmentController extends Controller
      */
     public function myEnrollments(Request $request)
     {
+        /** @var \App\Models\User $user */
         $user = Auth::user();
 
         $query = $user->enrollments()->with(['course:id,title,description,thumbnail,instructor_id']);

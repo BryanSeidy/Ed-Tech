@@ -4,6 +4,7 @@ namespace App\Http\Controllers\Course;
 
 use App\Http\Controllers\Controller;
 use App\Models\Course;
+use Illuminate\Database\Eloquent\Factories\HasFactory;
 use App\Models\Enrollment;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
@@ -176,6 +177,7 @@ class CourseController extends Controller
      */
     public function myCourses(Request $request)
     {
+        /** @var \App\Models\User $user */
         $user = Auth::user();
 
         $query = $user->enrolledCourses()->with('instructor');

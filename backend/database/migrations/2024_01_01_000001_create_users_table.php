@@ -8,18 +8,19 @@ return new class extends Migration
 {
     public function up(): void
     {
-        Schema::create('users', function (Blueprint $table) {
-            $table->id();
-            $table->string('name');
-            $table->string('email')->unique();
-            $table->string('password');
-            $table->string('avatar')->nullable();
-            $table->timestamps();
-        });
+        if (Schema::hasTable('users') && ! Schema::hasColumn('users', 'avatar')) {
+            Schema::table('users', function (Blueprint $table): void {
+                $table->string('avatar')->nullable()->after('password');
+            });
+        }
     }
 
     public function down(): void
     {
-        Schema::dropIfExists('users');
+        if (Schema::hasTable('users') && Schema::hasColumn('users', 'avatar')) {
+            Schema::table('users', function (Blueprint $table): void {
+                $table->dropColumn('avatar');
+            });
+        }
     }
 };

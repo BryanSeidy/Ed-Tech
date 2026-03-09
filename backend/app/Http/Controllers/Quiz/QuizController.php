@@ -3,6 +3,7 @@
 namespace App\Http\Controllers\Quiz;
 
 use App\Http\Controllers\Controller;
+use App\Http\Resources\QuizResource;
 use App\Services\QuizService;
 use Illuminate\Http\JsonResponse;
 
@@ -14,6 +15,6 @@ class QuizController extends Controller
 
     public function show(int $id): JsonResponse
     {
-        return response()->json(['data' => $this->quizService->findQuizWithQuestions($id)]);
+        return response()->json(['data' => QuizResource::make($this->quizService->findQuizWithQuestions($id))]);
     }
 }

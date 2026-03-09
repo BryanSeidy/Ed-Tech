@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers;
 
+use App\Http\Resources\CertificateResource;
 use App\Services\CertificateService;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
@@ -16,6 +17,6 @@ class CertificateController extends Controller
     {
         $certificate = $this->certificateService->issue((int) $request->user()->id, $courseId);
 
-        return response()->json(['data' => $certificate]);
+        return response()->json(['data' => CertificateResource::make($certificate)]);
     }
 }

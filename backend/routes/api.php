@@ -4,6 +4,8 @@ use App\Http\Controllers\Auth\AuthController;
 use App\Http\Controllers\CertificateController;
 use App\Http\Controllers\Course\CourseController;
 use App\Http\Controllers\Course\EnrollmentController;
+use App\Http\Controllers\Course\LessonController;
+use App\Http\Controllers\Course\ModuleController;
 use App\Http\Controllers\ProgressController;
 use App\Http\Controllers\Quiz\AttemptController;
 use App\Http\Controllers\Quiz\QuizController;
@@ -22,6 +24,9 @@ Route::prefix('auth')->group(function (): void {
 
 Route::get('/courses', [CourseController::class, 'index']);
 Route::get('/courses/{id}', [CourseController::class, 'show']);
+Route::get('/courses/{courseId}/modules', [ModuleController::class, 'index']);
+Route::get('/modules/{moduleId}/lessons', [LessonController::class, 'index']);
+Route::get('/lessons/{lessonId}', [LessonController::class, 'show']);
 Route::get('/quizzes/{id}', [QuizController::class, 'show']);
 
 Route::middleware('auth')->group(function (): void {

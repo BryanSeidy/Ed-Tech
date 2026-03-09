@@ -3,9 +3,10 @@
 namespace App\Http\Controllers\Course;
 
 use App\Http\Controllers\Controller;
+use App\Http\Requests\Course\EnrollRequest;
+use App\Http\Resources\EnrollmentResource;
 use App\Services\CourseService;
 use Illuminate\Http\JsonResponse;
-use Illuminate\Http\Request;
 
 class EnrollmentController extends Controller
 {
@@ -13,10 +14,10 @@ class EnrollmentController extends Controller
     {
     }
 
-    public function store(Request $request, int $courseId): JsonResponse
+    public function store(EnrollRequest $request, int $courseId): JsonResponse
     {
         $enrollment = $this->courseService->enroll((int) $request->user()->id, $courseId);
 
-        return response()->json(['data' => $enrollment], 201);
+        return response()->json(['data' => EnrollmentResource::make($enrollment)], 201);
     }
 }

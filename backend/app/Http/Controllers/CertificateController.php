@@ -24,23 +24,23 @@ class CertificateController extends Controller
     }
 
     /**
-     * Display a listing of certificates.
+     * Display a listing of certificates. lieste de certificats
      */
     public function index(Request $request)
     {
         $query = Certificate::with(['user', 'course']);
 
-        // Filter by user
+        // Filter by user filtre par utilisateur
         if ($request->has('user_id')) {
             $query->where('user_id', $request->user_id);
         }
 
-        // Filter by course
+        // Filter by course filtre par cours
         if ($request->has('course_id')) {
             $query->where('course_id', $request->course_id);
         }
 
-        // Filter by date range
+        // Filter by date range filtre par plage de dates d'émission    
         if ($request->has('issued_from')) {
             $query->where('issued_at', '>=', $request->issued_from);
         }
@@ -49,7 +49,7 @@ class CertificateController extends Controller
             $query->where('issued_at', '<=', $request->issued_to);
         }
 
-        // Search by course title or user name
+        // Search by course title or user name recherche par titre de cours ou nom d'utilisateur
         if ($request->has('search')) {
             $search = $request->search;
             $query->where(function ($q) use ($search) {
@@ -69,7 +69,7 @@ class CertificateController extends Controller
     }
 
     /**
-     * Store a newly created certificate.
+     * Store a newly created certificate. Ajout d'un nouveau certificat, avec validation des données d'entrée, vérification de l'existence d'un certificat pour le même utilisateur et cours, création du certificat dans la base de données, et une réponse indiquant que le certificat a été créé avec succès ou les erreurs de validation
      */
     public function store(Request $request)
     {
@@ -83,7 +83,7 @@ class CertificateController extends Controller
             return response()->json(['errors' => $validator->errors()], 422);
         }
 
-        // Check if certificate already exists
+        // Check if certificate already exists vérifier si un certificat existe déjà pour le même utilisateur et cours
         $existingCertificate = Certificate::where('user_id', $request->user_id)
             ->where('course_id', $request->course_id)
             ->first();
@@ -103,7 +103,8 @@ class CertificateController extends Controller
     }
 
     /**
-     * Display the specified certificate.
+     * Display the specified certificate. Affichage d'un certificat spécifique, avec le chargement des relations utilisateur 
+     * et cours, et une réponse indiquant les détails du certificat ou une erreur si le certificat n'est pas trouvé   
      */
     public function show(Certificate $certificate)
     {
@@ -113,7 +114,7 @@ class CertificateController extends Controller
     }
 
     /**
-     * Update the specified certificate.
+     * Update the specified certificate. mise a jour des donnees d'un certificat
      */
     public function update(Request $request, Certificate $certificate)
     {
@@ -132,11 +133,11 @@ class CertificateController extends Controller
     }
 
     /**
-     * Remove the specified certificate.
+     * Remove the specified certificate. supression d'un certificat
      */
     public function destroy(Certificate $certificate)
     {
-        // Delete certificate file if it exists
+        // Delete certificate file if it exists suppression du fichier de certificat s'il existe
         if ($certificate->certificate_url && Storage::disk('public')->exists($certificate->certificate_url)) {
             Storage::disk('public')->delete($certificate->certificate_url);
         }
@@ -147,7 +148,7 @@ class CertificateController extends Controller
     }
 
     /**
-     * Generate a certificate for a user who completed a course.
+     * Generate a certificate for a user who completed a course. generation d'un certificat a l'utilisateur ayant terminer le cours
      */
     public function generate(Request $request)
     {
@@ -163,7 +164,7 @@ class CertificateController extends Controller
         $userId = $request->user_id ?? Auth::id();
         $courseId = $request->course_id;
 
-        // Check if user is enrolled in the course
+        // Check if user is enrolled in the course verifier si l'utilisateur c'est inscrit au cours
         $enrollment = Enrollment::where('user_id', $userId)
             ->where('course_id', $courseId)
             ->first();
@@ -172,7 +173,7 @@ class CertificateController extends Controller
             return response()->json(['message' => 'User is not enrolled in this course'], 400);
         }
 
-        // Check if certificate already exists
+        // Check if certificate already exists verifier si le certificat existe deja
         $existingCertificate = Certificate::where('user_id', $userId)
             ->where('course_id', $courseId)
             ->first();
@@ -181,7 +182,7 @@ class CertificateController extends Controller
             return response()->json(['message' => 'Certificate already exists for this user and course'], 400);
         }
 
-        // Check if course is completed (all lessons completed)
+        // Check if course is completed (all lessons completed) verifier si un cours est terminé (toutes les leçons complétées)
         $course = Course::with('modules.lessons')->find($courseId);
         $totalLessons = $course->modules->sum(function ($module) {
             return $module->lessons->count();
@@ -204,7 +205,7 @@ class CertificateController extends Controller
             ], 400);
         }
 
-        // Generate certificate
+        // Generate certificate // generer les certificat
         try {
             $certificate = $this->certificateService->generateCertificate($userId, $courseId);
 
@@ -218,7 +219,7 @@ class CertificateController extends Controller
     }
 
     /**
-     * Download certificate file.
+     * Download certificate file. Telecharger les certificats
      */
     public function download(Certificate $certificate)
     {
@@ -234,7 +235,7 @@ class CertificateController extends Controller
     }
 
     /**
-     * Verify certificate authenticity.
+     * Verify certificate authenticity. verifier si un certificat est est authentique
      */
     public function verify(Request $request)
     {
@@ -261,7 +262,7 @@ class CertificateController extends Controller
     }
 
     /**
-     * Get certificates for the authenticated user.
+     * Get certificates for the authenticated user. Recuperer le certificat de l'utilisateur qui est connecter
      */
     public function myCertificates(Request $request)
     {
@@ -289,7 +290,7 @@ class CertificateController extends Controller
     }
 
     /**
-     * Check if a user can get a certificate for a course.
+     * Check if a user can get a certificate for a course. verifier si un utilisateur est éligible pour obtenir un certificat pour un cours, en vérifiant son inscription au cours, l'existence d'un certificat pour le même utilisateur et cours, et la complétion du cours (toutes les leçons complétées), et en retournant une réponse indiquant si l'utilisateur est éligible ou non, avec les raisons de l'inéligibilité le cas échéant
      */
     public function checkEligibility(Request $request)
     {
@@ -305,7 +306,7 @@ class CertificateController extends Controller
         $userId = $request->user_id ?? Auth::id();
         $courseId = $request->course_id;
 
-        // Check if user is enrolled
+        // Check if user is enrolled verifier si l'utilisateur c'est inscrit au cours   
         $enrollment = Enrollment::where('user_id', $userId)
             ->where('course_id', $courseId)
             ->first();
@@ -317,7 +318,7 @@ class CertificateController extends Controller
             ]);
         }
 
-        // Check if certificate already exists
+        // Check if certificate already exists verifier si le certificat existe deja
         $existingCertificate = Certificate::where('user_id', $userId)
             ->where('course_id', $courseId)
             ->first();
@@ -330,7 +331,7 @@ class CertificateController extends Controller
             ]);
         }
 
-        // Check course completion
+        // Check course completion verifier si le cours est terminer
         $course = Course::with('modules.lessons')->find($courseId);
         $totalLessons = $course->modules->sum(function ($module) {
             return $module->lessons->count();

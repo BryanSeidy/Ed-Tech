@@ -15,7 +15,7 @@ use Illuminate\Validation\Rule;
 class ProgressController extends Controller
 {
     /**
-     * Display a listing of progress records.
+     * Display a listing of progress records. Afficher la liste des progressions 
      */
     public function index(Request $request)
     {
@@ -58,7 +58,7 @@ class ProgressController extends Controller
     }
 
     /**
-     * Store a newly created progress record.
+     * Store a newly created progress record. ajouter une nouvelle progression
      */
     public function store(Request $request)
     {
@@ -73,7 +73,7 @@ class ProgressController extends Controller
             return response()->json(['errors' => $validator->errors()], 422);
         }
 
-        // Check if progress record already exists
+        // Check if progress record already exists verifier si la progression existe deja 
         $existingProgress = Progress::where('user_id', $request->user_id)
             ->where('lesson_id', $request->lesson_id)
             ->first();
@@ -93,7 +93,7 @@ class ProgressController extends Controller
     }
 
     /**
-     * Display the specified progress record.
+     * Display the specified progress record. Afficher un progression specifique
      */
     public function show(Progress $progress)
     {
@@ -103,7 +103,7 @@ class ProgressController extends Controller
     }
 
     /**
-     * Update the specified progress record.
+     * Update the specified progress record. Mise a jour des donnees de progression
      */
     public function update(Request $request, Progress $progress)
     {
@@ -118,7 +118,7 @@ class ProgressController extends Controller
 
         $data = $request->only(['completed', 'completed_at']);
 
-        // If marking as completed and no completed_at provided, set current time
+        // If marking as completed and no completed_at provided, set current time // si 
         if (isset($data['completed']) && $data['completed'] && !isset($data['completed_at'])) {
             $data['completed_at'] = now();
         }
@@ -144,7 +144,7 @@ class ProgressController extends Controller
     }
 
     /**
-     * Mark a lesson as completed for the authenticated user.
+     * Mark a lesson as completed for the authenticated user. Markr que la lecon est terminer pour l'utilisateur connecter
      */
     public function markCompleted(Request $request)
     {

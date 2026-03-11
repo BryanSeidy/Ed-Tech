@@ -59,7 +59,7 @@ class User extends Authenticatable
     // Résultats des évaluations
     public function results()
     {
-        return $this->hasMany(Result::class);
+        // return $this->hasMany(Result::class);
     }
 
     // Certificats obtenus

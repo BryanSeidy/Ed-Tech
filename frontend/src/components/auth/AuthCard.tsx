@@ -14,7 +14,10 @@ export function AuthCard({ mode }: Readonly<{ mode: Mode }>) {
   const [name, setName] = useState('');
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
+  const [remember, setRemember] = useState(true);
+  const [showPassword, setShowPassword] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [fieldErrors, setFieldErrors] = useState<Record<string, string[]>>({});
   const [isSubmitting, setIsSubmitting] = useState(false);
 
   const isRegister = mode === 'register';
@@ -27,6 +30,7 @@ export function AuthCard({ mode }: Readonly<{ mode: Mode }>) {
   async function onSubmit(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
     setError(null);
+    setFieldErrors({});
 
     if (!email || !password || (isRegister && !name)) {
       setError('Merci de compléter tous les champs obligatoires.');
@@ -38,12 +42,13 @@ export function AuthCard({ mode }: Readonly<{ mode: Mode }>) {
       if (isRegister) {
         await register({ name, email, password });
       } else {
-        await login({ email, password });
+        await login({ email, password, remember });
       }
       router.push('/dashboard');
     } catch (err) {
       if (err instanceof HttpError) {
         setError(err.message);
+        setFieldErrors(err.fields ?? {});
       } else {
         setError('Impossible de traiter votre demande. Réessayez.');
       }
@@ -53,7 +58,7 @@ export function AuthCard({ mode }: Readonly<{ mode: Mode }>) {
   }
 
   return (
-    <section className="card">
+    <section className="card" aria-live="polite">
       <h1>{title}</h1>
       <p>Utilisez votre adresse email institutionnelle pour une meilleure traçabilité.</p>
       <form className="form-grid" onSubmit={onSubmit} noValidate>
@@ -67,7 +72,9 @@ export function AuthCard({ mode }: Readonly<{ mode: Mode }>) {
               onChange={(event) => setName(event.target.value)}
               autoComplete="name"
               required
+              aria-invalid={Boolean(fieldErrors.name)}
             />
+            {fieldErrors.name?.[0] && <span className="field-error">{fieldErrors.name[0]}</span>}
           </label>
         )}
 
@@ -81,7 +88,9 @@ export function AuthCard({ mode }: Readonly<{ mode: Mode }>) {
             onChange={(event) => setEmail(event.target.value)}
             autoComplete="email"
             required
+            aria-invalid={Boolean(fieldErrors.email)}
           />
+          {fieldErrors.email?.[0] && <span className="field-error">{fieldErrors.email[0]}</span>}
         </label>
 
         <label htmlFor="password">
@@ -89,14 +98,40 @@ export function AuthCard({ mode }: Readonly<{ mode: Mode }>) {
           <input
             id="password"
             name="password"
-            type="password"
+            type={showPassword ? 'text' : 'password'}
             value={password}
             onChange={(event) => setPassword(event.target.value)}
             autoComplete={isRegister ? 'new-password' : 'current-password'}
             minLength={8}
             required
+            aria-invalid={Boolean(fieldErrors.password)}
           />
+          {fieldErrors.password?.[0] && <span className="field-error">{fieldErrors.password[0]}</span>}
         </label>
+
+        <div className="inline-actions">
+          <label className="checkbox" htmlFor="showPassword">
+            <input
+              id="showPassword"
+              type="checkbox"
+              checked={showPassword}
+              onChange={(event) => setShowPassword(event.target.checked)}
+            />
+            Afficher le mot de passe
+          </label>
+
+          {!isRegister && (
+            <label className="checkbox" htmlFor="remember">
+              <input
+                id="remember"
+                type="checkbox"
+                checked={remember}
+                onChange={(event) => setRemember(event.target.checked)}
+              />
+              Se souvenir de moi
+            </label>
+          )}
+        </div>
 
         {error && <div className="error">{error}</div>}
 

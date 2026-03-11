@@ -35,4 +35,8 @@ return [
         ],
     ],
 
+    'live' => [
+        'provider' => env('LIVE_PROVIDER', 'jitsi'),
+    ],
+
 ];

@@ -1,15 +1,22 @@
 export class HttpError extends Error {
   status: number;
+  fields?: Record<string, string[]>;
 
-  constructor(message: string, status: number) {
+  constructor(message: string, status: number, fields?: Record<string, string[]>) {
     super(message);
     this.status = status;
+    this.fields = fields;
   }
 }
 
 const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL ?? 'http://localhost:8000/api';
 
 type RequestOptions = Omit<RequestInit, 'body'> & { body?: unknown };
+
+type ApiErrorShape = {
+  message?: string;
+  errors?: Record<string, string[]>;
+};
 
 export async function http<T>(path: string, options: RequestOptions = {}): Promise<T> {
   const headers = new Headers(options.headers);
@@ -29,10 +36,14 @@ export async function http<T>(path: string, options: RequestOptions = {}): Promi
     cache: 'no-store',
   });
 
-  const data = (await response.json().catch(() => ({}))) as { message?: string };
+  const data = (await response.json().catch(() => ({}))) as ApiErrorShape;
 
   if (!response.ok) {
-    throw new HttpError(data.message ?? 'Une erreur réseau est survenue.', response.status);
+    throw new HttpError(
+      data.message ?? 'Une erreur réseau est survenue.',
+      response.status,
+      data.errors,
+    );
   }
 
   return data as T;

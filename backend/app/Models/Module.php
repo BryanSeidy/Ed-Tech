@@ -13,6 +13,10 @@ class Module extends Model
 
     protected $fillable = ['course_id', 'title', 'position', 'order'];
 
+    protected $casts = [
+        'position' => 'integer',
+    ];
+
     public function course(): BelongsTo
     {
         return $this->belongsTo(Course::class);

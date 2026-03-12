@@ -13,7 +13,16 @@ class Quiz extends Model
 
     public $timestamps = false;
 
-    protected $fillable = ['lesson_id', 'title', 'passing_score', 'type'];
+    protected $fillable = [
+        'lesson_id',
+        'title',
+        'description',
+        'passing_score',
+        'duration_minutes',
+        'is_published',
+        'allow_review',
+        'show_answers',
+    ];
 
     public function lesson(): BelongsTo
     {

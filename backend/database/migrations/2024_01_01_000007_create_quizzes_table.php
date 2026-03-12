@@ -12,7 +12,12 @@ Schema::create('quizzes', function (Blueprint $table) {
 $table->id();
 $table->foreignId('lesson_id')->constrained()->cascadeOnDelete();
 $table->string('title');
+$table->text('description')->nullable();
 $table->integer('passing_score')->default(50);
+$table->integer('duration_minutes')->nullable();
+$table->boolean('is_published')->default(false);
+$table->boolean('allow_review')->default(true);
+$table->boolean('show_answers')->default(false);
 });
 }
 

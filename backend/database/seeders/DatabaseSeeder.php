@@ -24,6 +24,12 @@ class DatabaseSeeder extends Seeder
             CourseSeeder::class,
             ModuleSeeder::class,
             LessonSeeder::class,
+            EnrollmentSeeder::class,
+            QuizSeeder::class,
+            QuestionSeeder::class,
+            AnswerSeeder::class,
+            ProgressSeeder::class,
+            AttemptSeeder::class,
         ]);
     }
 }

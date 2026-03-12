@@ -14,7 +14,10 @@ class Attempt extends Model
 
     protected $fillable = ['user_id', 'quiz_id', 'score', 'attempted_at'];
 
-    protected $casts = ['attempted_at' => 'datetime'];
+    protected $casts = [
+        'score' => 'integer',
+        'attempted_at' => 'datetime',
+    ];
 
     public function user(): BelongsTo
     {
@@ -24,5 +27,10 @@ class Attempt extends Model
     public function quiz(): BelongsTo
     {
         return $this->belongsTo(Quiz::class);
+    }
+    
+    public function course()
+    {
+        return $this->hasOneThrough(Course::class, Quiz::class, 'id', 'id', 'quiz_id', 'course_id');
     }
 }

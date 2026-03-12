@@ -13,6 +13,7 @@ $table->id();
 $table->foreignId('quiz_id')->constrained()->cascadeOnDelete();
 $table->text('question_text');
 $table->string('type');
+$table->integer('position')->default(0);
 });
 }
 

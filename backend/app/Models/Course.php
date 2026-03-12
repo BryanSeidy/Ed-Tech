@@ -12,16 +12,20 @@ class Course extends Model
     protected $fillable = [
         'title',
         'description',
-        'teacher_id'
+        'thumbnail',
+        'instructor_id',
+        'is_published',
     ];
 
-    // Enseignant du cours
-    public function teacher()
+    protected $casts = [
+        'is_published' => 'boolean',
+    ];
+
+    public function instructor()
     {
-        return $this->belongsTo(User::class, 'teacher_id');
+        return $this->belongsTo(User::class, 'instructor_id');
     }
 
-    // Modules du cours
     public function modules()
     {
         return $this->hasMany(Module::class);
@@ -39,10 +43,19 @@ class Course extends Model
         return $this->hasMany(Evaluation::class);
     }
 
-    // Etudiants inscrits
+    public function enrollments()
+    {
+        return $this->hasMany(Enrollment::class);
+    }
+
     public function students()
     {
         return $this->belongsToMany(User::class, 'enrollments');
+    }
+
+    public function quizzes()
+    {
+        return $this->hasMany(Quiz::class);
     }
 
     // Certificats

@@ -7,10 +7,10 @@ export default function HomePage() {
         <h1>Bienvenue sur Ed-Tech</h1>
         <p>Connectez-vous pour accéder à votre espace d’apprentissage.</p>
         <div className="actions">
-          <Link className="button primary" href="/login">
+          <Link className="button primary" href="/auth/login">
             Se connecter
           </Link>
-          <Link className="button ghost" href="/register">
+          <Link className="button ghost" href="/auth/register">
             Créer un compte
           </Link>
         </div>

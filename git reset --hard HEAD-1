@@ -1,0 +1,9 @@
+[33m421536e[m[33m ([m[1;36mHEAD[m[33m -> [m[1;32mdevelop[m[33m)[m Merge remote-tracking branch 'origin/thierry-database' into develop
+[33m0125cea[m Add contribution guidelines to CONTRIBUTING.md, update README.md with tech stack and installation instructions, remove unused user migration file, and add architecture documentation for project structure and task distribution.
+[33m41bc946[m Add exception handling for already enrolled users, implement request validation for authentication and course enrollment, and enhance resource responses for various entities.
+[33m836af22[m Implement authentication feature with login, registration, and dashboard pages; add global styles and context for user authentication management.
+[33m8f2efa7[m Add controllers, models, and services for courses, quizzes, certificates, and user progress management
+[33m25f5c87[m[33m ([m[1;31morigin/thierry-database[m[33m)[m Thierry : ajout migrations, models et seeders pour le système e-learning
+[33m29a6829[m mise a jour de certain package dans laravel et next
+[33m09ca425[m[33m ([m[1;31morigin/feature/test[m[33m, [m[1;31morigin/feature/nom-feature[m[33m, [m[1;32mfeature/nom-feature[m[33m)[m Initial project structure
+[33mf44e615[m one

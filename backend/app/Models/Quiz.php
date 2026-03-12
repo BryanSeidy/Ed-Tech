@@ -13,11 +13,17 @@ class Quiz extends Model
 
     public $timestamps = false;
 
-    protected $fillable = ['lesson_id', 'title', 'passing_score'];
+    protected $fillable = ['lesson_id', 'title', 'passing_score', 'type'];
 
     public function lesson(): BelongsTo
     {
         return $this->belongsTo(Lesson::class);
+    }
+
+    // Cours
+    public function course()
+    {
+        return $this->belongsTo(Course::class);
     }
 
     public function questions(): HasMany
@@ -30,3 +36,4 @@ class Quiz extends Model
         return $this->hasMany(Attempt::class);
     }
 }
+

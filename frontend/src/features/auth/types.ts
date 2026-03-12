@@ -6,12 +6,14 @@ export interface AuthUser {
 }
 
 export interface AuthResponse {
-  user: AuthUser;
+  data?: AuthUser;
+  user?: AuthUser;
 }
 
 export interface LoginPayload {
   email: string;
   password: string;
+  remember?: boolean;
 }
 
 export interface RegisterPayload {

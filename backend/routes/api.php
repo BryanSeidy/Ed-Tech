@@ -6,6 +6,7 @@ use App\Http\Controllers\Course\CourseController;
 use App\Http\Controllers\Course\EnrollmentController;
 use App\Http\Controllers\Course\LessonController;
 use App\Http\Controllers\Course\ModuleController;
+use App\Http\Controllers\Live\VideoConferenceController;
 use App\Http\Controllers\ProgressController;
 use App\Http\Controllers\Quiz\AttemptController;
 use App\Http\Controllers\Quiz\QuizController;
@@ -40,4 +41,5 @@ Route::middleware('auth')->group(function (): void {
     Route::get('/courses/{courseId}/progress', [ProgressController::class, 'showCourseProgress']);
 
     Route::post('/courses/{courseId}/certificate', [CertificateController::class, 'issue']);
+    Route::post('/lessons/{lessonId}/live-room', [VideoConferenceController::class, 'createRoom']);
 });

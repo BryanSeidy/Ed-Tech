@@ -141,7 +141,7 @@ export function AuthCard({ mode }: Readonly<{ mode: Mode }>) {
       </form>
       <p className="helper">
         {isRegister ? 'Déjà inscrit ? ' : 'Pas encore de compte ? '}
-        <Link href={isRegister ? '/login' : '/register'}>
+        <Link href={isRegister ? '/auth/login' : '/auth/register'}>
           {isRegister ? 'Se connecter' : 'Créer un compte'}
         </Link>
       </p>

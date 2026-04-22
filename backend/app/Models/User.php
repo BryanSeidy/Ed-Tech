@@ -99,8 +99,10 @@ class User extends Authenticatable
         // return $this->hasMany(Result::class);
     }
 
+    // Certificats obtenus
     public function certificates()
     {
         return $this->hasMany(Certificate::class);
     }
+
 }

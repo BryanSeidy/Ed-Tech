@@ -10,7 +10,7 @@ export default function DashboardPage() {
 
   async function handleLogout() {
     await logout();
-    router.push('/login');
+    router.push('/auth/login');
   }
 
   return (

@@ -10,7 +10,7 @@ export function ProtectedView({ children }: Readonly<{ children: React.ReactNode
 
   useEffect(() => {
     if (!isLoading && !user) {
-      router.replace('/login');
+      router.replace('/auth/login');
     }
   }, [isLoading, user, router]);
 

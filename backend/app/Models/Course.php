@@ -21,6 +21,7 @@ class Course extends Model
         'is_published' => 'boolean',
     ];
 
+    // Enseignant du cours
     public function instructor()
     {
         return $this->belongsTo(User::class, 'instructor_id');
@@ -43,9 +44,11 @@ class Course extends Model
         return $this->hasMany(Evaluation::class);
     }
 
-    public function enrollments()
+    // public function enrollments()
+    // Alias de compatibilité
+    public function teacher()
     {
-        return $this->hasMany(Enrollment::class);
+        return $this->instructor();
     }
 
     public function students()

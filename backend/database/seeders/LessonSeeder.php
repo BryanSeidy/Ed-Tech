@@ -15,7 +15,7 @@ class LessonSeeder extends Seeder
             'title' => 'Présentation du cours',
             'content' => 'Bienvenue dans ce cours Laravel',
             'video_url' => null,
-            'pdf_file' => null
+            'position' => 1,
         ]);
 
         Lesson::create([
@@ -23,7 +23,7 @@ class LessonSeeder extends Seeder
             'title' => 'Installer Laravel',
             'content' => 'Guide d installation Laravel',
             'video_url' => null,
-            'pdf_file' => null
+            'position' => 1,
         ]);
 
     }

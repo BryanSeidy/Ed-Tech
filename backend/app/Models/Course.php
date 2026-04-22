@@ -12,13 +12,21 @@ class Course extends Model
     protected $fillable = [
         'title',
         'description',
-        'teacher_id'
+        'thumbnail',
+        'instructor_id',
+        'is_published',
     ];
 
     // Enseignant du cours
+    public function instructor()
+    {
+        return $this->belongsTo(User::class, 'instructor_id');
+    }
+
+    // Alias de compatibilité
     public function teacher()
     {
-        return $this->belongsTo(User::class, 'teacher_id');
+        return $this->instructor();
     }
 
     // Modules du cours

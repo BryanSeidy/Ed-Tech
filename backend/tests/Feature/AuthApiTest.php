@@ -42,4 +42,27 @@ class AuthApiTest extends TestCase
 
         $response->assertStatus(422)->assertJsonValidationErrors(['email']);
     }
+
+    public function test_login_returns_authenticated_user_and_me_uses_same_session(): void
+    {
+        $this->postJson('/api/auth/register', [
+            'name' => 'Assom Dev',
+            'email' => 'assom@example.com',
+            'password' => 'password123',
+        ]);
+
+        $login = $this->postJson('/api/auth/login', [
+            'email' => 'assom@example.com',
+            'password' => 'password123',
+        ]);
+
+        $login->assertOk()->assertJsonStructure([
+            'data' => ['id', 'name', 'email', 'avatar'],
+            'user' => ['id', 'name', 'email', 'avatar'],
+        ]);
+
+        $this->getJson('/api/auth/me')
+            ->assertOk()
+            ->assertJsonPath('data.email', 'assom@example.com');
+    }
 }

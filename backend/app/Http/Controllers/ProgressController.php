@@ -14,6 +14,21 @@ use Illuminate\Validation\Rule;
 
 class ProgressController extends Controller
 {
+    public function markLessonCompleted(Request $request, int $lessonId)
+    {
+        $request->merge(['lesson_id' => $lessonId]);
+
+        return $this->markCompleted($request);
+    }
+
+    public function showCourseProgress(Request $request, int $courseId)
+    {
+        $request->merge(['user_id' => Auth::id()]);
+        $course = Course::findOrFail($courseId);
+
+        return $this->getCourseProgress($request, $course);
+    }
+
     /**
      * Display a listing of progress records. Afficher la liste des progressions 
      */

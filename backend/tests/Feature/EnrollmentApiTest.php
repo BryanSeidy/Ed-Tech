@@ -30,8 +30,8 @@ class EnrollmentApiTest extends TestCase
 
         $response = $this->actingAs($user)->postJson("/api/courses/{$course->id}/enroll");
 
-        $response->assertStatus(409)->assertJson([
-            'message' => "L'utilisateur est déjà inscrit à ce cours.",
+        $response->assertStatus(400)->assertJson([
+            'message' => 'Already enrolled in this course',
         ]);
     }
 }

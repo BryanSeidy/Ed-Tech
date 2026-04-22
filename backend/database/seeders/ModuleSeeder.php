@@ -13,13 +13,13 @@ class ModuleSeeder extends Seeder
         Module::create([
             'course_id' => 1,
             'title' => 'Introduction',
-            'order' => 1
+            'position' => 1,
         ]);
 
         Module::create([
             'course_id' => 1,
             'title' => 'Installation Laravel',
-            'order' => 2
+            'position' => 2,
         ]);
 
     }

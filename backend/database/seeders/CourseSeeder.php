@@ -13,13 +13,15 @@ class CourseSeeder extends Seeder
         Course::create([
             'title' => 'Introduction à Laravel',
             'description' => 'Cours complet sur Laravel',
-            'teacher_id' => 2
+            'instructor_id' => 2,
+            'is_published' => true,
         ]);
 
         Course::create([
             'title' => 'Développement Web avec React',
             'description' => 'Apprendre React et Next.js',
-            'teacher_id' => 2
+            'instructor_id' => 2,
+            'is_published' => true,
         ]);
 
     }

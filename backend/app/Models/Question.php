@@ -13,15 +13,15 @@ class Question extends Model
 
     public $timestamps = false;
 
-    protected $fillable = ['evaluation_id', 'question', 'type', 'position',];
+    protected $fillable = ['quiz_id', 'question_text', 'type', 'position'];
     
     protected $casts = [
         'position' => 'integer',
     ];
 
-    public function evaluation(): BelongsTo
+    public function quiz(): BelongsTo
     {
-        return $this->belongsTo(Evaluation::class);
+        return $this->belongsTo(Quiz::class);
     }
 
     public function answers(): HasMany

@@ -1,62 +1,51 @@
-# E-learning Platform
+# Ed-Tech LMS (MVP + Conversion Landing)
 
-## Tech Stack
+## Stack
+- Frontend: Next.js
+- Backend: Laravel
+- Database: MySQL / SQLite (tests)
 
-Frontend
-Next.js
+## Run local (checklist)
+```bash
+# from repository root
+./scripts/run_mvp_check.sh
+```
 
-Backend
-Laravel
-
-Database
-MySQL
-
-## Installation
-
-### Backend
-
+### Backend dependency mirror (restricted network)
+If GitHub access is blocked, configure a mirror before install:
+```bash
 cd backend
-composer install
-php artisan migrate
-php artisan serve
+GITHUB_MIRROR_URL=https://ghproxy.com/https://github.com ./scripts/composer_install_with_mirror.sh
+```
 
-### Frontend
+## Product pages architecture
+- Landing conversion: `/`
+- Auth: `/auth/login`, `/auth/register`
+- Dashboard: `/dashboard`
+- Cours: `/dashboard/courses`, `/dashboard/courses/[courseId]`
+- Leçon: `/dashboard/courses/[courseId]/lessons/[lessonId]`
+- Quiz: `/dashboard/courses/[courseId]/quiz/[quizId]`
+- Exercices: `/dashboard/exercises`
+- Examens: `/dashboard/exams`
+- Planning: `/dashboard/planning`
+- Profil: `/dashboard/profile`
 
-cd frontend
-npm install
-npm run dev
+## MVP scope in production
+- ✅ Auth session flow: register/login/me/logout
+- ✅ Catalogue cours
+- ✅ Détail cours (modules + leçons)
+- ✅ Lecture de leçon
+- ✅ Soumission quiz
+- ✅ Affichage progression
+- ⛔ Live / certificats / paiement masqués côté UI tant qu'incomplets
 
+## Basic security controls
+- CORS limité à `FRONTEND_URL` avec cookies (`supports_credentials=true`).
+- Session API activée via middleware `StartSession`.
+- Validation requêtes auth + payload quiz/progression.
+- Rate limit auth (`throttle:10,1` sur register/login).
 
-build
-coverage
-docker
-license
-version
-
-Releases & Versioning
-
-The project follows Semantic Versioning (SemVer).
-
-Format :
-
-MAJOR.MINOR.PATCH
-
-Example :
-
-1.0.0
-
-Meaning :
-
-Version	Description
-MAJOR	Breaking changes
-MINOR	New features
-PATCH	Bug fixes
-Release Cycle
-Phase	Description
-Development	Work happens on develop
-Feature complete	Release branch created
-QA testing	Bugs fixed
-Production	Merge to main and release
-Release Branch Naming
-release/v1.0.0
-release/v1.1.0
+## CI
+- Workflow `.github/workflows/ci.yml`
+  - Frontend: `smoke + lint + build`
+  - Backend: install (mirror-ready) + `migrate:fresh --seed + php artisan test`

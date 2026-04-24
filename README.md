@@ -1,34 +1,34 @@
-# E-learning Platform (MVP)
+# Ed-Tech LMS (MVP + Conversion Landing)
 
 ## Stack
 - Frontend: Next.js
 - Backend: Laravel
 - Database: MySQL / SQLite (tests)
 
-## Run local (MVP checklist)
+## Run local (checklist)
 ```bash
-# From repository root
+# from repository root
 ./scripts/run_mvp_check.sh
 ```
 
-Manual steps:
+### Backend dependency mirror (restricted network)
+If GitHub access is blocked, configure a mirror before install:
 ```bash
-# Frontend
-cd frontend
-npm ci
-npm run smoke
-npm run lint
-npm run build
-
-# Backend
-cd ../backend
-composer install --no-interaction --prefer-dist
-cp .env.example .env
-php artisan key:generate --force
-php artisan migrate:fresh --seed
-php artisan test
-php artisan serve
+cd backend
+GITHUB_MIRROR_URL=https://ghproxy.com/https://github.com ./scripts/composer_install_with_mirror.sh
 ```
+
+## Product pages architecture
+- Landing conversion: `/`
+- Auth: `/auth/login`, `/auth/register`
+- Dashboard: `/dashboard`
+- Cours: `/dashboard/courses`, `/dashboard/courses/[courseId]`
+- Leçon: `/dashboard/courses/[courseId]/lessons/[lessonId]`
+- Quiz: `/dashboard/courses/[courseId]/quiz/[quizId]`
+- Exercices: `/dashboard/exercises`
+- Examens: `/dashboard/exams`
+- Planning: `/dashboard/planning`
+- Profil: `/dashboard/profile`
 
 ## MVP scope in production
 - ✅ Auth session flow: register/login/me/logout
@@ -48,4 +48,4 @@ php artisan serve
 ## CI
 - Workflow `.github/workflows/ci.yml`
   - Frontend: `smoke + lint + build`
-  - Backend: `migrate:fresh --seed + php artisan test`
+  - Backend: install (mirror-ready) + `migrate:fresh --seed + php artisan test`

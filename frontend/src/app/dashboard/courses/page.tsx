@@ -3,6 +3,7 @@
 import Link from 'next/link';
 import { useEffect, useState } from 'react';
 import { ProtectedView } from '@/src/components/auth/ProtectedView';
+import { AppNav } from '@/src/components/layout/AppNav';
 import { HttpError } from '@/src/lib/http';
 import { courseService, type CourseSummary } from '@/src/services/api/courseService';
 
@@ -27,6 +28,7 @@ export default function CoursesPage() {
   return (
     <ProtectedView>
       <main className="page-shell">
+        <AppNav />
         <section className="card wide-card">
           <h1>Catalogue des cours</h1>
           {loading ? <p>Chargement des cours...</p> : null}

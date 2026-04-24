@@ -4,6 +4,7 @@ import Link from 'next/link';
 import { useParams } from 'next/navigation';
 import { useEffect, useState } from 'react';
 import { ProtectedView } from '@/src/components/auth/ProtectedView';
+import { AppNav } from '@/src/components/layout/AppNav';
 import { HttpError } from '@/src/lib/http';
 import { courseService, type LessonSummary } from '@/src/services/api/courseService';
 import { quizService } from '@/src/services/api/quizService';
@@ -48,6 +49,7 @@ export default function LessonPage() {
   return (
     <ProtectedView>
       <main className="page-shell">
+        <AppNav />
         <section className="card wide-card">
           <h1>{lesson?.title ?? 'Leçon'}</h1>
           {error ? <p className="error">{error}</p> : null}

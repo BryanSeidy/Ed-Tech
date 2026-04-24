@@ -4,6 +4,7 @@ import Link from 'next/link';
 import { useEffect, useState } from 'react';
 import { useParams } from 'next/navigation';
 import { ProtectedView } from '@/src/components/auth/ProtectedView';
+import { AppNav } from '@/src/components/layout/AppNav';
 import { HttpError } from '@/src/lib/http';
 import { courseService, type CourseSummary } from '@/src/services/api/courseService';
 import { progressService, type CourseProgress } from '@/src/services/api/progressService';
@@ -40,6 +41,7 @@ export default function CourseDetailPage() {
   return (
     <ProtectedView>
       <main className="page-shell">
+        <AppNav />
         <section className="card wide-card">
           {loading ? <p>Chargement du cours...</p> : null}
           {error ? <p className="error">{error}</p> : null}

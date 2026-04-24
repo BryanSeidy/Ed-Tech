@@ -12,7 +12,7 @@ npm run build
 
 cd ../backend
 echo "[3/6] Backend dependencies"
-composer install --no-interaction --prefer-dist || true
+./scripts/composer_install_with_mirror.sh
 
 echo "[4/6] Prepare env"
 cp -n .env.example .env || true

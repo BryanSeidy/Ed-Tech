@@ -3,6 +3,7 @@
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import { ProtectedView } from '@/src/components/auth/ProtectedView';
+import { AppNav } from '@/src/components/layout/AppNav';
 import { useAuth } from '@/src/features/auth/useAuth';
 
 export default function DashboardPage() {
@@ -17,6 +18,7 @@ export default function DashboardPage() {
   return (
     <ProtectedView>
       <main className="page-shell">
+        <AppNav />
         <section className="card wide-card">
           <div className="topbar">
             <h1>Tableau de bord</h1>
@@ -31,6 +33,9 @@ export default function DashboardPage() {
           <div className="inline-actions mt-2">
             <Link className="button primary" href="/dashboard/courses">
               Voir le catalogue des cours
+            </Link>
+            <Link className="button ghost" href="/dashboard/profile">
+              Voir mon profil
             </Link>
           </div>
 

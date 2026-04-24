@@ -3,6 +3,7 @@
 import { useParams } from 'next/navigation';
 import { useEffect, useMemo, useState } from 'react';
 import { ProtectedView } from '@/src/components/auth/ProtectedView';
+import { AppNav } from '@/src/components/layout/AppNav';
 import { HttpError } from '@/src/lib/http';
 import { quizService, type QuizData } from '@/src/services/api/quizService';
 
@@ -58,6 +59,7 @@ export default function QuizPage() {
   return (
     <ProtectedView>
       <main className="page-shell">
+        <AppNav />
         <section className="card wide-card">
           <h1>{quiz?.title ?? 'Quiz'}</h1>
           {error ? <p className="error">{error}</p> : null}

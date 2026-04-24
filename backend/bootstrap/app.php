@@ -1,10 +1,14 @@
 <?php
 
 use App\Exceptions\AlreadyEnrolledException;
+use Illuminate\Auth\AuthenticationException;
 use Illuminate\Foundation\Application;
 use Illuminate\Foundation\Configuration\Exceptions;
 use Illuminate\Foundation\Configuration\Middleware;
+use Illuminate\Http\Request;
 use Illuminate\Session\Middleware\StartSession;
+use Illuminate\Validation\ValidationException;
+use Throwable;
 
 return Application::configure(basePath: dirname(__DIR__))
     ->withRouting(
@@ -21,7 +25,42 @@ return Application::configure(basePath: dirname(__DIR__))
     ->withExceptions(function (Exceptions $exceptions): void {
         $exceptions->render(function (AlreadyEnrolledException $exception) {
             return response()->json([
+                'code' => 'already_enrolled',
                 'message' => $exception->getMessage(),
             ], 409);
+        });
+
+        $exceptions->render(function (ValidationException $exception, Request $request) {
+            if (! $request->is('api/*')) {
+                return null;
+            }
+
+            return response()->json([
+                'code' => 'validation_error',
+                'message' => 'Validation failed.',
+                'errors' => $exception->errors(),
+            ], 422);
+        });
+
+        $exceptions->render(function (AuthenticationException $exception, Request $request) {
+            if (! $request->is('api/*')) {
+                return null;
+            }
+
+            return response()->json([
+                'code' => 'unauthenticated',
+                'message' => 'Authentication required.',
+            ], 401);
+        });
+
+        $exceptions->render(function (Throwable $exception, Request $request) {
+            if (! $request->is('api/*')) {
+                return null;
+            }
+
+            return response()->json([
+                'code' => 'server_error',
+                'message' => 'Unexpected server error.',
+            ], 500);
         });
     })->create();

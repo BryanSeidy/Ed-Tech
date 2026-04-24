@@ -1,62 +1,51 @@
-# E-learning Platform
+# E-learning Platform (MVP)
 
-## Tech Stack
+## Stack
+- Frontend: Next.js
+- Backend: Laravel
+- Database: MySQL / SQLite (tests)
 
-Frontend
-Next.js
+## Run local (MVP checklist)
+```bash
+# From repository root
+./scripts/run_mvp_check.sh
+```
 
-Backend
-Laravel
-
-Database
-MySQL
-
-## Installation
-
-### Backend
-
-cd backend
-composer install
-php artisan migrate
-php artisan serve
-
-### Frontend
-
+Manual steps:
+```bash
+# Frontend
 cd frontend
-npm install
-npm run dev
+npm ci
+npm run smoke
+npm run lint
+npm run build
 
+# Backend
+cd ../backend
+composer install --no-interaction --prefer-dist
+cp .env.example .env
+php artisan key:generate --force
+php artisan migrate:fresh --seed
+php artisan test
+php artisan serve
+```
 
-build
-coverage
-docker
-license
-version
+## MVP scope in production
+- ✅ Auth session flow: register/login/me/logout
+- ✅ Catalogue cours
+- ✅ Détail cours (modules + leçons)
+- ✅ Lecture de leçon
+- ✅ Soumission quiz
+- ✅ Affichage progression
+- ⛔ Live / certificats / paiement masqués côté UI tant qu'incomplets
 
-Releases & Versioning
+## Basic security controls
+- CORS limité à `FRONTEND_URL` avec cookies (`supports_credentials=true`).
+- Session API activée via middleware `StartSession`.
+- Validation requêtes auth + payload quiz/progression.
+- Rate limit auth (`throttle:10,1` sur register/login).
 
-The project follows Semantic Versioning (SemVer).
-
-Format :
-
-MAJOR.MINOR.PATCH
-
-Example :
-
-1.0.0
-
-Meaning :
-
-Version	Description
-MAJOR	Breaking changes
-MINOR	New features
-PATCH	Bug fixes
-Release Cycle
-Phase	Description
-Development	Work happens on develop
-Feature complete	Release branch created
-QA testing	Bugs fixed
-Production	Merge to main and release
-Release Branch Naming
-release/v1.0.0
-release/v1.1.0
+## CI
+- Workflow `.github/workflows/ci.yml`
+  - Frontend: `smoke + lint + build`
+  - Backend: `migrate:fresh --seed + php artisan test`

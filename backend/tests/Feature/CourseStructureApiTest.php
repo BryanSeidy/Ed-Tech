@@ -13,28 +13,22 @@ class CourseStructureApiTest extends TestCase
 {
     use RefreshDatabase;
 
-    public function test_list_modules_endpoint_returns_paginated_payload(): void
+    public function test_list_courses_returns_published_courses(): void
     {
         $instructor = User::factory()->create();
-        $course = Course::create([
+        Course::create([
             'title' => 'Course A',
-            'description' => 'Description',
+            'description' => 'Description A',
             'instructor_id' => $instructor->id,
             'is_published' => true,
         ]);
 
-        Module::create(['course_id' => $course->id, 'title' => 'M1', 'position' => 1]);
-        Module::create(['course_id' => $course->id, 'title' => 'M2', 'position' => 2]);
+        $response = $this->getJson('/api/courses?published=1');
 
-        $response = $this->getJson("/api/courses/{$course->id}/modules?per_page=1&sort=position&direction=asc");
-
-        $response->assertOk()->assertJsonStructure([
-            'data',
-            'meta' => ['current_page', 'per_page', 'total', 'last_page'],
-        ]);
+        $response->assertOk()->assertJsonPath('data.0.title', 'Course A');
     }
 
-    public function test_list_lessons_endpoint_returns_paginated_payload(): void
+    public function test_course_detail_includes_modules_and_lessons(): void
     {
         $instructor = User::factory()->create();
         $course = Course::create([
@@ -47,11 +41,11 @@ class CourseStructureApiTest extends TestCase
         $module = Module::create(['course_id' => $course->id, 'title' => 'M1', 'position' => 1]);
         Lesson::create(['module_id' => $module->id, 'title' => 'L1', 'position' => 1]);
 
-        $response = $this->getJson("/api/modules/{$module->id}/lessons?per_page=5");
+        $response = $this->getJson("/api/courses/{$course->id}");
 
-        $response->assertOk()->assertJsonStructure([
-            'data',
-            'meta' => ['current_page', 'per_page', 'total', 'last_page'],
-        ]);
+        $response->assertOk()
+            ->assertJsonPath('title', 'Course A')
+            ->assertJsonPath('modules.0.title', 'M1')
+            ->assertJsonPath('modules.0.lessons.0.title', 'L1');
     }
 }

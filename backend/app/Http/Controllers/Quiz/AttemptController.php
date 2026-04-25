@@ -10,6 +10,16 @@ use Illuminate\Support\Facades\Auth;
 
 class AttemptController extends Controller
 {
+    private function resolveCourseFromQuiz(Quiz $quiz)
+    {
+        return $quiz->lesson->module->course;
+    }
+
+    private function resolveCourseFromAttempt(Attempt $attempt)
+    {
+        return $attempt->quiz->lesson->module->course;
+    }
+
     /**
      * Display a listing of attempts for a quiz (instructor only). Affichage d'une liste des tentatives pour un quiz,
      *  accessible uniquement à l'instructeur du cours, avec une vérification de l'autorisation de l'utilisateur, une 
@@ -18,7 +28,7 @@ class AttemptController extends Controller
      */
     public function index(Quiz $quiz)
     {
-        $course = $quiz->course;
+        $course = $this->resolveCourseFromQuiz($quiz);
 
         // Check if user is the instructor
         if ($course->instructor_id !== Auth::id()) {
@@ -39,7 +49,7 @@ class AttemptController extends Controller
     public function show(Attempt $attempt)
     {
         $user = Auth::user();
-        $course = $attempt->course;
+        $course = $this->resolveCourseFromAttempt($attempt);
 
         // Check if user is the attempt owner or the course instructor verifier que c'est un instructeur qui est connecter
         if ($attempt->user_id !== $user->id && $course->instructor_id !== $user->id) {
@@ -57,7 +67,7 @@ class AttemptController extends Controller
     public function store(Request $request, Quiz $quiz)
     {
         $user = Auth::user();
-        $course = $quiz->course;
+        $course = $this->resolveCourseFromQuiz($quiz);
 
         // Check if user is enrolled in the course
         if (!$course->enrollments()->where('user_id', $user->id)->exists()) {
@@ -146,7 +156,7 @@ class AttemptController extends Controller
     public function destroy(Attempt $attempt)
     {
         $user = Auth::user();
-        $course = $attempt->course;
+        $course = $this->resolveCourseFromAttempt($attempt);
 
         // Check if user is the attempt owner or the course instructor
         if ($attempt->user_id !== $user->id && $course->instructor_id !== $user->id) {
@@ -164,7 +174,7 @@ class AttemptController extends Controller
     public function userAttempts(Quiz $quiz)
     {
         $user = Auth::user();
-        $course = $quiz->course;
+        $course = $this->resolveCourseFromQuiz($quiz);
 
         // Check if user is enrolled
         if (!$course->enrollments()->where('user_id', $user->id)->exists()) {
@@ -187,7 +197,7 @@ class AttemptController extends Controller
         /** @var \App\Models\User $user */
         $user = Auth::user();
 
-        $query = $user->attempts()->with(['quiz.course:id,title']);
+        $query = $user->attempts()->with(['quiz.lesson.module.course:id,title']);
 
         // Filter by course
         if ($request->has('course_id')) {
@@ -206,7 +216,7 @@ class AttemptController extends Controller
      */
     public function statistics(Quiz $quiz)
     {
-        $course = $quiz->course;
+        $course = $this->resolveCourseFromQuiz($quiz);
 
         // Check if user is the instructor
         if ($course->instructor_id !== Auth::id()) {
@@ -250,7 +260,7 @@ class AttemptController extends Controller
     public function results(Attempt $attempt)
     {
         $user = Auth::user();
-        $course = $attempt->course;
+        $course = $this->resolveCourseFromAttempt($attempt);
 
         // Check if user is the attempt owner or the course instructor
         if ($attempt->user_id !== $user->id && $course->instructor_id !== $user->id) {

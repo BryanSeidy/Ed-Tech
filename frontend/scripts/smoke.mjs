@@ -1,11 +1,11 @@
 import { readFileSync } from 'node:fs';
 
 const checks = [
-  ['src/app/page.tsx', 'Apprenez plus vite. Réussissez avec précision.'],
+  ['src/app/page.tsx', '<Navbar />'],
   ['src/app/dashboard/courses/page.tsx', 'Catalogue des cours'],
-  ['src/app/dashboard/courses/[courseId]/page.tsx', 'Progression:'],
-  ['src/app/dashboard/courses/[courseId]/lessons/[lessonId]/page.tsx', 'Marquer comme terminée'],
-  ['src/app/dashboard/courses/[courseId]/quiz/[quizId]/page.tsx', 'Soumettre le quiz'],
+  ['src/app/dashboard/courses/[courseId]/CourseDetailClient.tsx', 'Progression:'],
+  ['src/app/dashboard/courses/[courseId]/lessons/[lessonId]/LessonClient.tsx', 'Marquer comme terminée'],
+  ['src/app/dashboard/courses/[courseId]/quiz/[quizId]/QuizClient.tsx', 'Soumettre le quiz'],
   ['src/app/dashboard/exercises/page.tsx', 'Générer un nouvel exercice'],
   ['src/app/dashboard/exams/page.tsx', 'Démarrer un examen blanc'],
   ['src/app/dashboard/planning/page.tsx', 'Optimiser mon planning'],

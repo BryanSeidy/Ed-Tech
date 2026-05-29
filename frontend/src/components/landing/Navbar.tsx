@@ -1,45 +1,42 @@
 import { Button } from '@/src/components/ui/Button';
-import { IconChevronDown } from '@/src/components/landing/icons';
 
-function MenuItem({ label, active = false, withDropdown = false }: { label: string; active?: boolean; withDropdown?: boolean }) {
-  return (
-    <a
-      aria-label={label}
-      className={`inline-flex items-center gap-1 rounded-md px-2 py-1 text-sm transition duration-500 ease-out focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--primary)] ${
-        active ? 'text-[var(--primary)]' : 'text-[var(--foreground)] hover:text-[var(--primary)]'
-      }`}
-      href="#"
-    >
-      {label}
-      {withDropdown ? <IconChevronDown /> : null}
-    </a>
-  );
-}
+const links = [
+  { href: '#positionnement', label: 'Positionnement' },
+  { href: '#live', label: 'Classe live' },
+  { href: '#ecosysteme', label: 'Écosystème' },
+  { href: '#temoignages', label: 'Témoignages' },
+];
 
 export function Navbar() {
   return (
-    <header className="sticky top-0 z-40 border-b border-[var(--border)] bg-[var(--background)]/95 backdrop-blur">
-      <div className="max-w-7xl mx-auto px-4 md:px-6">
-        <nav aria-label="Primary" className="flex items-center justify-between py-4">
-          <a className="inline-flex items-center gap-2 text-sm font-bold text-[var(--foreground)]" href="#" aria-label="ED-TECH Home">
-            <span className="flex h-8 w-8 items-center justify-center rounded-lg bg-[var(--primary)] text-white">E</span>
-            ED-TECH
+    <header className="sticky top-0 z-40 border-b border-[var(--border)] bg-white/85 backdrop-blur-xl">
+      <div className="mx-auto max-w-7xl px-4 md:px-6">
+        <nav aria-label="Navigation principale" className="flex items-center justify-between py-4">
+          <a className="inline-flex items-center gap-3 text-sm font-bold text-[var(--foreground)]" href="#hero" aria-label="Ed-tech accueil">
+            <span className="flex h-9 w-9 items-center justify-center rounded-xl bg-[var(--foreground)] text-white shadow-lg shadow-slate-900/10">
+              E
+            </span>
+            <span className="tracking-[-0.02em]">Ed-tech</span>
           </a>
 
-          <div className="hidden items-center gap-4 md:flex">
-            <MenuItem active label="Home" />
-            <MenuItem label="Courses" withDropdown />
-            <MenuItem label="Pages" withDropdown />
-            <MenuItem label="Blog" />
-            <MenuItem label="Contact" />
+          <div className="hidden items-center gap-1 lg:flex">
+            {links.map((link) => (
+              <a
+                className="rounded-full px-4 py-2 text-sm font-medium text-[var(--muted)] transition hover:bg-[var(--secondary)] hover:text-[var(--foreground)] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--primary)]"
+                href={link.href}
+                key={link.href}
+              >
+                {link.label}
+              </a>
+            ))}
           </div>
 
           <div className="flex items-center gap-2">
-            <Button ariaLabel="Register" href="/auth/register" variant="ghost">
-              Register
+            <Button ariaLabel="Connexion Ed-tech" className="hidden sm:inline-flex" href="/auth/login" variant="ghost">
+              Connexion
             </Button>
-            <Button ariaLabel="Sign In" href="/auth/login" variant="primary">
-              Sign In
+            <Button ariaLabel="Inscription Ed-tech" href="/auth/register" variant="primary">
+              S’inscrire
             </Button>
           </div>
         </nav>

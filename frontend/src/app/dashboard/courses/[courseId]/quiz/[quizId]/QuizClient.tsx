@@ -48,7 +48,9 @@ export default function QuizPage() {
       }));
       const submission = await quizService.submitAttempt(nextAttemptId, payload);
       setResult(
-        `Score: ${submission.results.score}/${submission.results.total_questions} (${submission.results.percentage}%)`,
+        submission.results.passed
+          ? `Quiz validé: ${submission.results.score}/${submission.results.total_questions} (${submission.results.percentage}%).`
+          : `Score insuffisant: ${submission.results.score}/${submission.results.total_questions} (${submission.results.percentage}%). Score minimal requis: ${submission.results.passing_score}%.`,
       );
       setError(null);
     } catch (e) {
@@ -63,7 +65,9 @@ export default function QuizPage() {
         <section className="card wide-card">
           <h1>{quiz?.title ?? 'Quiz'}</h1>
           {error ? <p className="error">{error}</p> : null}
-          {result ? <p className="success">{result}</p> : null}
+          {result ? (
+            <p className={result.startsWith('Quiz validé') ? 'success' : 'error'}>{result}</p>
+          ) : null}
 
           {quiz?.questions.map((question) => (
             <article className="item-card" key={question.id}>

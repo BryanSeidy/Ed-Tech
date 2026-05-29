@@ -9,13 +9,14 @@ use App\Models\Progress;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Storage;
+use App\Services\LearningGateService;
 
 class LessonController extends Controller
 {
     /**
      * Display a listing of lessons for a module. Affichage de la liste des leçons d'un module donné, accessible uniquement aux utilisateurs inscrits dans le cours ou à l'instructeur du cours, avec des détails sur chaque leçon, y compris le titre, la position, la durée, et le statut de progression de l'utilisateur pour chaque leçon (complétée ou non)
      */
-    public function index(Request $request, Module $module)
+    public function index(Request $request, Module $module, LearningGateService $learningGateService)
     {
         // Check if user is enrolled in the course or is the instructor. Verification que l'utilisateur est inscrit dans le cours ou est l'instructeur du cours
         $course = $module->course;
@@ -25,12 +26,26 @@ class LessonController extends Controller
             return response()->json(['message' => 'Unauthorized'], 403);
         }
 
+        $states = $learningGateService->buildCourseLessonStates($course, $user);
         $lessons = $module->lessons()
             ->orderBy('position')
-            ->with(['progress' => function ($query) use ($user) {
-                $query->where('user_id', $user->id);
-            }])
-            ->get();
+            ->with([
+                'quiz',
+                'progress' => function ($query) use ($user) {
+                    $query->where('user_id', $user->id);
+                },
+            ])
+            ->get()
+            ->each(function (Lesson $lesson) use ($states): void {
+                $state = $states[$lesson->id] ?? null;
+
+                if ($state) {
+                    $lesson->setAttribute('learning_state', $state);
+                    $lesson->setAttribute('is_locked', $state['is_locked']);
+                    $lesson->setAttribute('quiz_id', $state['quiz_id']);
+                    $lesson->setAttribute('quiz_passed', $state['quiz_passed']);
+                }
+            });
 
         return response()->json($lessons);
     }
@@ -70,7 +85,7 @@ class LessonController extends Controller
     /**
      * Display the specified lesson. Afficher les détails d'une leçon spécifique, accessible uniquement aux utilisateurs inscrits dans le cours ou à l'instructeur du cours, avec des informations telles que le titre de la leçon, le contenu, l'URL de la vidéo, la durée, et le statut de progression de l'utilisateur pour cette leçon (complétée ou non)
      */
-    public function show(Lesson $lesson)
+    public function show(Lesson $lesson, LearningGateService $learningGateService)
     {
         $course = $lesson->course;
         $user = Auth::user();
@@ -80,9 +95,22 @@ class LessonController extends Controller
             return response()->json(['message' => 'Unauthorized'], 403);
         }
 
-        $lesson->load(['module', 'progress' => function ($query) use ($user) {
+        $state = $learningGateService->lessonState($lesson, $user);
+
+        if ($state['is_locked']) {
+            return response()->json([
+                'message' => 'Lesson is locked until the previous pedagogical requirements are completed.',
+                'learning_state' => $state,
+            ], 423);
+        }
+
+        $lesson->load(['module', 'quiz', 'progress' => function ($query) use ($user) {
             $query->where('user_id', $user->id);
         }]);
+        $lesson->setAttribute('learning_state', $state);
+        $lesson->setAttribute('is_locked', false);
+        $lesson->setAttribute('quiz_id', $state['quiz_id']);
+        $lesson->setAttribute('quiz_passed', $state['quiz_passed']);
 
         return response()->json($lesson);
     }
@@ -141,7 +169,7 @@ class LessonController extends Controller
     /**
      * Mark lesson as completed for the authenticated user. Marquer une leçon comme complétée pour l'utilisateur authentifié, accessible uniquement aux utilisateurs inscrits dans le cours, avec la création ou la mise à jour d'une progression pour cette leçon indiquant qu'elle est complétée, et la date de complétion
      */
-    public function markCompleted(Lesson $lesson)
+    public function markCompleted(Lesson $lesson, LearningGateService $learningGateService)
     {
         $course = $lesson->course;
         $user = Auth::user();
@@ -149,6 +177,21 @@ class LessonController extends Controller
         // Check if user is enrolled
         if (!$course->enrollments()->where('user_id', $user->id)->exists()) {
             return response()->json(['message' => 'Not enrolled in this course'], 403);
+        }
+
+        $state = $learningGateService->lessonState($lesson, $user);
+        if ($state['is_locked']) {
+            return response()->json([
+                'message' => 'Lesson is locked until the previous pedagogical requirements are completed.',
+                'learning_state' => $state,
+            ], 423);
+        }
+
+        if ($lesson->quiz && ! $learningGateService->hasPassedLessonQuiz($lesson, $user->id)) {
+            return response()->json([
+                'message' => 'You must pass this lesson quiz before marking the lesson as completed.',
+                'learning_state' => $state,
+            ], 422);
         }
 
         $progress = Progress::updateOrCreate(
@@ -176,6 +219,21 @@ class LessonController extends Controller
         // Check if user is enrolled
         if (!$course->enrollments()->where('user_id', $user->id)->exists()) {
             return response()->json(['message' => 'Not enrolled in this course'], 403);
+        }
+
+        $state = $learningGateService->lessonState($lesson, $user);
+        if ($state['is_locked']) {
+            return response()->json([
+                'message' => 'Lesson is locked until the previous pedagogical requirements are completed.',
+                'learning_state' => $state,
+            ], 423);
+        }
+
+        if ($lesson->quiz && ! $learningGateService->hasPassedLessonQuiz($lesson, $user->id)) {
+            return response()->json([
+                'message' => 'You must pass this lesson quiz before marking the lesson as completed.',
+                'learning_state' => $state,
+            ], 422);
         }
 
         $progress = Progress::updateOrCreate(

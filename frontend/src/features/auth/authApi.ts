@@ -6,6 +6,6 @@ export const authApi = {
     http<AuthResponse>('/auth/register', { method: 'POST', body: payload }),
   login: (payload: LoginPayload) =>
     http<AuthResponse>('/auth/login', { method: 'POST', body: payload }),
-  me: () => http<AuthResponse>('/auth/me'),
+  me: () => http<AuthResponse>('/auth/me', { skipUnauthorizedRedirect: true }),
   logout: () => http<{ message: string }>('/auth/logout', { method: 'POST' }),
 };

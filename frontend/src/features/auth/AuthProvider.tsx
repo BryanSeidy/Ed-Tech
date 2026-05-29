@@ -2,6 +2,7 @@
 
 import { createContext, useCallback, useEffect, useMemo, useState } from 'react';
 import { authApi } from '@/src/features/auth/authApi';
+import { AUTH_UNAUTHORIZED_EVENT } from '@/src/lib/http';
 import type { AuthUser, LoginPayload, RegisterPayload } from '@/src/features/auth/types';
 
 type AuthContextValue = {
@@ -54,6 +55,13 @@ export function AuthProvider({ children }: Readonly<{ children: React.ReactNode 
   useEffect(() => {
     let mounted = true;
 
+    function handleUnauthorized() {
+      setUser(null);
+      window.localStorage.removeItem(AUTH_KEY);
+    }
+
+    window.addEventListener(AUTH_UNAUTHORIZED_EVENT, handleUnauthorized);
+
     void (async () => {
       try {
         const response = await authApi.me();
@@ -80,6 +88,7 @@ export function AuthProvider({ children }: Readonly<{ children: React.ReactNode 
 
     return () => {
       mounted = false;
+      window.removeEventListener(AUTH_UNAUTHORIZED_EVENT, handleUnauthorized);
     };
   }, []);
 

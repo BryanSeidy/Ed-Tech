@@ -12,11 +12,13 @@ class Attempt extends Model
 
     public $timestamps = false;
 
-    protected $fillable = ['user_id', 'quiz_id', 'score', 'attempted_at'];
+    protected $fillable = ['user_id', 'quiz_id', 'score', 'passed', 'attempted_at', 'submitted_at'];
 
     protected $casts = [
         'score' => 'integer',
+        'passed' => 'boolean',
         'attempted_at' => 'datetime',
+        'submitted_at' => 'datetime',
     ];
 
     public function user(): BelongsTo

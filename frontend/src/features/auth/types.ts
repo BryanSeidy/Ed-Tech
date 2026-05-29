@@ -1,7 +1,10 @@
+export type UserRole = 'student' | 'instructor' | 'admin';
+
 export interface AuthUser {
   id: number;
   name: string;
   email: string;
+  role: UserRole;
   avatar?: string | null;
 }
 
@@ -20,4 +23,5 @@ export interface RegisterPayload {
   name: string;
   email: string;
   password: string;
+  role: UserRole;
 }

@@ -11,6 +11,7 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Validator;
 use Illuminate\Validation\Rule;
+use App\Services\LearningGateService;
 
 class ProgressController extends Controller
 {
@@ -183,6 +184,23 @@ class ProgressController extends Controller
 
         if (!$enrollment) {
             return response()->json(['message' => 'User is not enrolled in this course'], 403);
+        }
+
+        $learningGateService = app(LearningGateService::class);
+        $targetUser = User::findOrFail($userId);
+        $state = $learningGateService->lessonState($lesson, $targetUser);
+        if ($state['is_locked']) {
+            return response()->json([
+                'message' => 'Lesson is locked until the previous pedagogical requirements are completed.',
+                'learning_state' => $state,
+            ], 423);
+        }
+
+        if ($lesson->quiz && ! $learningGateService->hasPassedLessonQuiz($lesson, $userId)) {
+            return response()->json([
+                'message' => 'You must pass this lesson quiz before marking the lesson as completed.',
+                'learning_state' => $state,
+            ], 422);
         }
 
         $progress = Progress::updateOrCreate(

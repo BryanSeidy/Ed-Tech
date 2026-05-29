@@ -35,7 +35,7 @@ class ModuleController extends Controller
     /**
      * Store a newly created module. Creation des nouveaux modules
      */
-    public function store(Request $request, Module $course)
+    public function store(Request $request, Course $course)
     {
         // Check if user is the instructor verifier que c'est l'instructeur du cours qui est connecter
         if ($course->instructor_id !== Auth::id()) {
@@ -43,7 +43,6 @@ class ModuleController extends Controller
         }
 
         $request->validate([
-            'course_id' => 'required|integer|exists:courses,id',
             'title' => 'nullable|string|max:255',
             'position' => 'required|integer|min:1',
         ]);
@@ -54,7 +53,7 @@ class ModuleController extends Controller
         }
 
         $module = $course->modules()->create($request->only([
-            'course_id', 'title', 'position'
+            'title', 'position'
         ]));
 
         return response()->json($module, 201);

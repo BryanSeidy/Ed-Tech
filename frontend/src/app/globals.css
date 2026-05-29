@@ -1,16 +1,30 @@
+@import "tailwindcss";
+
+@theme {
+  --color-edtech-white: #ffffff;
+  --color-edtech-ink: #0a2540;
+  --color-edtech-cobalt: #0071e3;
+  --color-edtech-sky: #7dd3fc;
+  --color-edtech-slate: #f6f9fc;
+  --color-edtech-muted: #5f6f86;
+  --color-edtech-border: #dbe5f0;
+}
+
 :root {
   color-scheme: light;
   --background: #ffffff;
-  --foreground: #0f172a;
-  --primary: #3b82f6;
-  --secondary: #f1f5f9;
-  --accent: #d4af37;
-  --muted: #64748b;
+  --foreground: #0a2540;
+  --primary: #0071e3;
+  --secondary: #f6f9fc;
+  --accent: #7dd3fc;
+  --muted: #5f6f86;
   --card: #ffffff;
-  --border: #e2e8f0;
+  --border: #dbe5f0;
 }
 * { box-sizing: border-box; }
-body { margin: 0; font-family: Inter, system-ui, -apple-system, Segoe UI, Roboto, sans-serif; background: linear-gradient(180deg, #f8fafc 0%, #eef2ff 100%); color: var(--foreground); }
+html { scroll-behavior: smooth; }
+body { margin: 0; font-family: Inter, ui-sans-serif, system-ui, -apple-system, Segoe UI, Roboto, sans-serif; background: #ffffff; color: var(--foreground); }
+::selection { background: rgba(0, 113, 227, .16); color: var(--foreground); }
 .auth-shell { min-height: 100vh; display: grid; place-items: center; padding: 1.5rem; }
 .card { width: min(100%, 460px); background: #fff; border: 1px solid #e2e8f0; border-radius: 14px; padding: 1.5rem; box-shadow: 0 10px 30px rgba(15,23,42,.06); }
 .card h1 { margin-top: 0; margin-bottom: .5rem; font-size: 1.4rem; }

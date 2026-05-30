@@ -5,6 +5,7 @@ namespace App\Http\Controllers\Quiz;
 use App\Http\Controllers\Controller;
 use App\Models\Attempt;
 use App\Models\Quiz;
+use App\Models\Progress;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 
@@ -85,7 +86,9 @@ class AttemptController extends Controller
         $attempt = Attempt::create([
             'user_id' => $user->id,
             'quiz_id' => $quiz->id,
-            'score' => 0, // Will be updated when submitted
+            'score' => 0,
+            'passed' => false,
+            'attempted_at' => now(),
         ]);
 
         $attempt->load('quiz');
@@ -108,8 +111,7 @@ class AttemptController extends Controller
             return response()->json(['message' => 'Unauthorized'], 403);
         }
 
-        // Check if attempt is not already completed (score > 0 might indicate completion)
-        if ($attempt->score > 0) {
+        if ($attempt->submitted_at !== null) {
             return response()->json(['message' => 'Attempt already submitted'], 400);
         }
 
@@ -119,33 +121,60 @@ class AttemptController extends Controller
             'answers.*.answer_id' => 'required|integer|exists:answers,id',
         ]);
 
-        $score = 0;
-        $totalQuestions = $attempt->quiz->questions()->count();
+        $quiz = $attempt->quiz()->with('questions.answers', 'lesson')->firstOrFail();
+        $totalQuestions = $quiz->questions->count();
+        $answeredQuestionIds = collect($request->answers)->pluck('question_id')->unique();
 
+        if ($answeredQuestionIds->count() !== $totalQuestions) {
+            return response()->json(['message' => 'All quiz questions must be answered'], 422);
+        }
+
+        $correctAnswers = 0;
         foreach ($request->answers as $answerData) {
-            $question = $attempt->quiz->questions()->find($answerData['question_id']);
-            if ($question) {
-                $selectedAnswer = $question->answers()->find($answerData['answer_id']);
-                if ($selectedAnswer && $selectedAnswer->is_correct) {
-                    $score++;
-                }
+            $question = $quiz->questions->firstWhere('id', (int) $answerData['question_id']);
+
+            if (! $question) {
+                return response()->json(['message' => 'Answer does not belong to this quiz'], 422);
+            }
+
+            $selectedAnswer = $question->answers->firstWhere('id', (int) $answerData['answer_id']);
+
+            if (! $selectedAnswer) {
+                return response()->json(['message' => 'Selected answer does not belong to this question'], 422);
+            }
+
+            if ($selectedAnswer->is_correct) {
+                $correctAnswers++;
             }
         }
 
-        $percentage = $totalQuestions > 0 ? round(($score / $totalQuestions) * 100, 2) : 0;
+        $percentage = $totalQuestions > 0 ? round(($correctAnswers / $totalQuestions) * 100, 2) : 0.0;
+        $passed = $percentage >= $quiz->passing_score;
 
         $attempt->update([
             'score' => $percentage,
-            'attempted_at' => now(),
+            'passed' => $passed,
+            'submitted_at' => now(),
         ]);
 
+        if ($passed) {
+            Progress::updateOrCreate(
+                ['user_id' => $user->id, 'lesson_id' => $quiz->lesson_id],
+                ['completed' => true, 'completed_at' => now()]
+            );
+        }
+
         return response()->json([
-            'message' => 'Quiz submitted successfully',
-            'attempt' => $attempt,
+            'message' => $passed
+                ? 'Quiz submitted successfully'
+                : 'Quiz submitted but passing score was not reached',
+            'attempt' => $attempt->refresh(),
             'results' => [
-                'score' => $score,
+                'score' => $correctAnswers,
                 'total_questions' => $totalQuestions,
                 'percentage' => $percentage,
+                'passing_score' => $quiz->passing_score,
+                'passed' => $passed,
             ]
         ]);
     }

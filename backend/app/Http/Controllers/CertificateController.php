@@ -76,7 +76,7 @@ class CertificateController extends Controller
         $validator = Validator::make($request->all(), [
             'user_id' => 'required|exists:users,id',
             'course_id' => 'required|exists:courses,id',
-            'certificate_url' => 'nullable|string|max:255',
+            'certificate_url' => 'required|string|max:255',
         ]);
 
         if ($validator->fails()) {

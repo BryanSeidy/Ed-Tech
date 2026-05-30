@@ -37,6 +37,7 @@ return [
 
     'live' => [
         'provider' => env('LIVE_PROVIDER', 'jitsi'),
+        'jitsi_domain' => env('JITSI_DOMAIN', 'meet.jit.si'),
     ],
 
 ];

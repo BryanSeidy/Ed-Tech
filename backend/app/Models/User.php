@@ -7,11 +7,12 @@ use Illuminate\Database\Eloquent\Relations\BelongsToMany;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Foundation\Auth\User as Authenticatable;
 use Illuminate\Notifications\Notifiable;
+use Laravel\Sanctum\HasApiTokens;
 
 class User extends Authenticatable
 {
     /** @use HasFactory<\Database\Factories\UserFactory> */
-    use HasFactory, Notifiable;
+    use HasApiTokens, HasFactory, Notifiable;
 
     /**
      * The attributes that are mass assignable.
@@ -57,7 +58,7 @@ class User extends Authenticatable
     // Enseignant : un user peut créer plusieurs cours
     public function coursesTeaching()
     {
-        return $this->hasMany(Course::class, 'teacher_id');
+        return $this->hasMany(Course::class, 'instructor_id');
     }
 
     // public function courses()
@@ -103,6 +104,11 @@ class User extends Authenticatable
     public function certificates()
     {
         return $this->hasMany(Certificate::class);
+    }
+
+    public function liveSessionsCreated()
+    {
+        return $this->hasMany(LiveSession::class, 'created_by');
     }
 
 }

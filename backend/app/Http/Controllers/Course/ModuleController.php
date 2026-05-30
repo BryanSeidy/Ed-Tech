@@ -7,13 +7,14 @@ use App\Models\Course;
 use App\Models\Module;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
+use App\Services\LearningGateService;
 
 class ModuleController extends Controller
 {
     /**
      * Display a listing of modules for a course. Affichage des cours avec leurs modules
      */
-    public function index(Course $course)
+    public function index(Course $course, LearningGateService $learningGateService)
     {
         $user = Auth::user();
 
@@ -22,12 +23,25 @@ class ModuleController extends Controller
             return response()->json(['message' => 'Unauthorized'], 403);
         }
 
+        $states = $learningGateService->buildCourseLessonStates($course, $user);
         $modules = $course->modules()
             ->with(['lessons' => function ($query) {
-                $query->orderBy('position')->select('id', 'module_id', 'title', 'position', 'duration');
+                $query->orderBy('position')->with('quiz')->select('id', 'module_id', 'title', 'position', 'duration');
             }])
             ->orderBy('position')
-            ->get();
+            ->get()
+            ->each(function ($module) use ($states): void {
+                $module->lessons->each(function ($lesson) use ($states): void {
+                    $state = $states[$lesson->id] ?? null;
+
+                    if ($state) {
+                        $lesson->setAttribute('learning_state', $state);
+                        $lesson->setAttribute('is_locked', $state['is_locked']);
+                        $lesson->setAttribute('quiz_id', $state['quiz_id']);
+                        $lesson->setAttribute('quiz_passed', $state['quiz_passed']);
+                    }
+                });
+            });
 
         return response()->json($modules);
     }
@@ -35,7 +49,7 @@ class ModuleController extends Controller
     /**
      * Store a newly created module. Creation des nouveaux modules
      */
-    public function store(Request $request, Module $course)
+    public function store(Request $request, Course $course)
     {
         // Check if user is the instructor verifier que c'est l'instructeur du cours qui est connecter
         if ($course->instructor_id !== Auth::id()) {
@@ -43,7 +57,6 @@ class ModuleController extends Controller
         }
 
         $request->validate([
-            'course_id' => 'required|integer|exists:courses,id',
             'title' => 'nullable|string|max:255',
             'position' => 'required|integer|min:1',
         ]);
@@ -54,7 +67,7 @@ class ModuleController extends Controller
         }
 
         $module = $course->modules()->create($request->only([
-            'course_id', 'title', 'position'
+            'title', 'position'
         ]));
 
         return response()->json($module, 201);
@@ -63,7 +76,7 @@ class ModuleController extends Controller
     /**
      * Display the specified module. afficher les modules specifique
      */
-    public function show(Module $module)
+    public function show(Module $module, LearningGateService $learningGateService)
     {
         $course = $module->course;
         $user = Auth::user();
@@ -73,15 +86,29 @@ class ModuleController extends Controller
             return response()->json(['message' => 'Unauthorized'], 403);
         }
 
+        $states = $learningGateService->buildCourseLessonStates($course, $user);
         $module->load([
             'lessons' => function ($query) use ($user) {
                 $query->orderBy('position')
-                      ->with(['progress' => function ($q) use ($user) {
-                          $q->where('user_id', $user->id);
-                      }]);
+                      ->with([
+                          'quiz',
+                          'progress' => function ($q) use ($user) {
+                              $q->where('user_id', $user->id);
+                          },
+                      ]);
             },
             'course:id,title'
         ]);
+        $module->lessons->each(function ($lesson) use ($states): void {
+            $state = $states[$lesson->id] ?? null;
+
+            if ($state) {
+                $lesson->setAttribute('learning_state', $state);
+                $lesson->setAttribute('is_locked', $state['is_locked']);
+                $lesson->setAttribute('quiz_id', $state['quiz_id']);
+                $lesson->setAttribute('quiz_passed', $state['quiz_passed']);
+            }
+        });
 
         return response()->json($module);
     }

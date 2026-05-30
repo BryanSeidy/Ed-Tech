@@ -12,6 +12,7 @@ use App\Models\Course;
 use App\Models\Progress;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Validator;
 
 class QuizController extends Controller
@@ -77,6 +78,12 @@ class QuizController extends Controller
             'is_published' => 'nullable|boolean',
             'allow_review' => 'nullable|boolean',
             'show_answers' => 'nullable|boolean',
+            'questions' => 'required|array|min:1',
+            'questions.*.question_text' => 'required|string|max:2000',
+            'questions.*.type' => 'nullable|string|in:single_choice,multiple_choice',
+            'questions.*.answers' => 'required|array|min:2',
+            'questions.*.answers.*.answer_text' => 'required|string|max:1000',
+            'questions.*.answers.*.is_correct' => 'required|boolean',
         ]);
 
         if ($validator->fails()) {
@@ -86,7 +93,6 @@ class QuizController extends Controller
             ], 422);
         }
 
-        // Check if user is instructor of the course
         $lesson = Lesson::with('module.course')->findOrFail($request->lesson_id);
         if ($lesson->module->course->instructor_id !== Auth::id()) {
             return response()->json([
@@ -95,16 +101,46 @@ class QuizController extends Controller
             ], 403);
         }
 
-        $quiz = Quiz::create([
-            'lesson_id' => $request->lesson_id,
-            'title' => $request->title,
-            'description' => $request->description,
-            'passing_score' => $request->passing_score,
-            'duration_minutes' => $request->duration_minutes,
-            'is_published' => $request->get('is_published', false),
-            'allow_review' => $request->get('allow_review', true),
-            'show_answers' => $request->get('show_answers', false),
-        ]);
+        foreach ($request->questions as $index => $questionPayload) {
+            $correctAnswers = collect($questionPayload['answers'])->where('is_correct', true)->count();
+
+            if ($correctAnswers !== 1) {
+                return response()->json([
+                    'success' => false,
+                    'message' => sprintf('Question %d must have exactly one correct answer.', $index + 1),
+                ], 422);
+            }
+        }
+
+        $quiz = DB::transaction(function () use ($request) {
+            $quiz = Quiz::create([
+                'lesson_id' => $request->lesson_id,
+                'title' => $request->title,
+                'description' => $request->description,
+                'passing_score' => $request->passing_score,
+                'duration_minutes' => $request->duration_minutes,
+                'is_published' => $request->boolean('is_published'),
+                'allow_review' => $request->get('allow_review', true),
+                'show_answers' => $request->boolean('show_answers'),
+            ]);
+
+            foreach ($request->questions as $questionIndex => $questionPayload) {
+                $question = $quiz->questions()->create([
+                    'question_text' => $questionPayload['question_text'],
+                    'type' => $questionPayload['type'] ?? 'single_choice',
+                    'position' => $questionIndex + 1,
+                ]);
+
+                foreach ($questionPayload['answers'] as $answerPayload) {
+                    $question->answers()->create([
+                        'answer_text' => $answerPayload['answer_text'],
+                        'is_correct' => (bool) $answerPayload['is_correct'],
+                    ]);
+                }
+            }
+
+            return $quiz->load('questions.answers');
+        });
 
         return response()->json([
             'success' => true,
@@ -120,11 +156,18 @@ class QuizController extends Controller
     public function show($id)
     {
         $quiz = Quiz::with('lesson.module.course', 'questions.answers')->findOrFail($id);
+        $user = Auth::user();
+        $isInstructor = $quiz->lesson->module->course->instructor_id === $user->id || $user->role === 'admin';
 
-        // Randomize questions if needed (for security)
         if ($quiz->questions->isNotEmpty()) {
-            $questions = $quiz->questions->shuffle();
-            $quiz->questions = $questions;
+            $questions = $quiz->questions->shuffle()->values();
+            $quiz->setRelation('questions', $questions);
+        }
+
+        if (! $isInstructor && ! $quiz->show_answers) {
+            $quiz->questions->each(function (Question $question): void {
+                $question->answers->each(fn (Answer $answer) => $answer->makeHidden('is_correct'));
+            });
         }
 
         return response()->json([
@@ -427,17 +470,39 @@ class QuizController extends Controller
             ], 403);
         }
 
-        // Calculate score
-        $score = $this->calculateScore($quiz, $request->answers);
+        if ($attempt->submitted_at !== null) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Attempt already submitted',
+            ], 400);
+        }
 
-        // Update attempt with score
+        if ($attempt->quiz_id !== $quiz->id) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Attempt does not belong to this quiz',
+            ], 422);
+        }
+
+        $totalQuestions = $quiz->questions()->count();
+        $answeredQuestionIds = collect($request->answers)->pluck('question_id')->unique();
+        if ($answeredQuestionIds->count() !== $totalQuestions) {
+            return response()->json([
+                'success' => false,
+                'message' => 'All quiz questions must be answered',
+            ], 422);
+        }
+
+        $score = $this->calculateScore($quiz, $request->answers);
+        $passed = $score >= $quiz->passing_score;
+
         $attempt->update([
             'score' => $score,
-            'attempted_at' => now(),
+            'passed' => $passed,
+            'submitted_at' => now(),
         ]);
 
-        // Mark lesson as completed if student passed
-        if ($score >= $quiz->passing_score) {
+        if ($passed) {
             Progress::updateOrCreate(
                 [
                     'user_id' => $user->id,
@@ -452,13 +517,15 @@ class QuizController extends Controller
 
         return response()->json([
             'success' => true,
-            'message' => 'Quiz submitted successfully',
+            'message' => $passed
+                ? 'Quiz submitted successfully'
+                : 'Quiz submitted but passing score was not reached',
             'data' => [
                 'attempt_id' => $attempt->id,
                 'score' => $score,
                 'passing_score' => $quiz->passing_score,
-                'passed' => $score >= $quiz->passing_score,
-                'percentage' => round(($score / $quiz->questions()->count()) * 100, 2),
+                'passed' => $passed,
+                'percentage' => $score,
             ],
         ], 200);
     }
@@ -529,8 +596,9 @@ class QuizController extends Controller
                 'quiz_title' => $quiz->title,
                 'score' => $attempt->score,
                 'passing_score' => $quiz->passing_score,
-                'passed' => $attempt->score >= $quiz->passing_score,
+                'passed' => $attempt->passed,
                 'attempted_at' => $attempt->attempted_at,
+                'submitted_at' => $attempt->submitted_at,
                 'questions' => $questions,
             ],
         ], 200);

@@ -16,7 +16,10 @@ class AuthController extends Controller
 {
     public function register(RegisterRequest $request): JsonResponse
     {
-        $user = User::create($request->validated());
+        $data = $request->validated();
+        $data['role'] = $data['role'] ?? 'student';
+
+        $user = User::create($data);
 
         Auth::login($user);
 

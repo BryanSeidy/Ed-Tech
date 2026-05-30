@@ -4,6 +4,7 @@ import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import { FormEvent, useMemo, useState } from 'react';
 import { HttpError } from '@/src/lib/http';
+import type { UserRole } from '@/src/features/auth/types';
 import { useAuth } from '@/src/features/auth/useAuth';
 
 type Mode = 'login' | 'register';
@@ -14,6 +15,7 @@ export function AuthCard({ mode }: Readonly<{ mode: Mode }>) {
   const [name, setName] = useState('');
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
+  const [role, setRole] = useState<UserRole>('student');
   const [remember, setRemember] = useState(true);
   const [showPassword, setShowPassword] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -40,7 +42,7 @@ export function AuthCard({ mode }: Readonly<{ mode: Mode }>) {
     try {
       setIsSubmitting(true);
       if (isRegister) {
-        await register({ name, email, password });
+        await register({ name, email, password, role });
       } else {
         await login({ email, password, remember });
       }
@@ -75,6 +77,25 @@ export function AuthCard({ mode }: Readonly<{ mode: Mode }>) {
               aria-invalid={Boolean(fieldErrors.name)}
             />
             {fieldErrors.name?.[0] && <span className="field-error">{fieldErrors.name[0]}</span>}
+          </label>
+        )}
+
+        {isRegister && (
+          <label htmlFor="role">
+            Rôle
+            <select
+              id="role"
+              name="role"
+              value={role}
+              onChange={(event) => setRole(event.target.value as UserRole)}
+              required
+              aria-invalid={Boolean(fieldErrors.role)}
+            >
+              <option value="student">Apprenant</option>
+              <option value="instructor">Formateur</option>
+              <option value="admin">Administrateur</option>
+            </select>
+            {fieldErrors.role?.[0] && <span className="field-error">{fieldErrors.role[0]}</span>}
           </label>
         )}
 

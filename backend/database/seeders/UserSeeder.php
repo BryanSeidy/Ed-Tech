@@ -22,7 +22,7 @@ class UserSeeder extends Seeder
             'name' => 'Teacher',
             'email' => 'teacher@elearning.com',
             'password' => Hash::make('password'),
-            'role' => 'teacher'
+            'role' => 'instructor'
         ]);
 
         User::create([
@@ -37,18 +37,21 @@ class UserSeeder extends Seeder
             'name' => 'Jean Dupont',
             'email' => 'jean.dupont@elearning.com',
             'password' => Hash::make('password123'),
+            'role' => 'instructor',
         ]);
 
         User::create([
             'name' => 'Marie Martin',
             'email' => 'marie.martin@elearning.com',
             'password' => Hash::make('password123'),
+            'role' => 'instructor',
         ]);
 
         User::create([
             'name' => 'Pierre Bernard',
             'email' => 'pierre.bernard@elearning.com',
             'password' => Hash::make('password123'),
+            'role' => 'instructor',
         ]);
 
         // Create students

@@ -6,6 +6,7 @@ use App\Http\Controllers\Controller;
 use App\Models\Course;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use App\Models\Enrollment;
+use App\Services\LearningGateService;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Storage;
@@ -71,9 +72,16 @@ class CourseController extends Controller
     /**
      * Display the specified course. afficher les détails d'un cours spécifique, y compris les modules, les leçons et les quiz associés
      */
-    public function show(Course $course)
+    public function show(Course $course, LearningGateService $learningGateService)
     {
-        $course->load(['instructor', 'modules.lessons']);
+        $course->load([
+            'instructor',
+            'modules' => fn ($query) => $query->orderBy('position'),
+            'modules.lessons' => fn ($query) => $query->orderBy('position'),
+            'modules.lessons.quiz',
+        ]);
+
+        $learningGateService->enrichCourseForUser($course, Auth::user());
 
         return response()->json($course);
     }

@@ -7,7 +7,7 @@ export function Hero() {
       <div className="max-w-7xl mx-auto px-4 md:px-6 grid grid-cols-1 md:grid-cols-2 gap-6 items-center">
         <div className="space-y-6 animate-in-up">
           <p className="inline-flex rounded-full border border-(--border) bg-(--secondary) px-3 py-1 text-xs font-semibold text-(--muted)">
-            Plateforme d'apprentissage certifiant
+            Plateforme d&apos;apprentissage certifiant
           </p>
           <h1 className="text-4xl md:text-5xl font-bold text-(--foreground) leading-tight">
             Réussissez vos études ou accélérez votre reconversion avec des cours structurés, des classes virtuelles

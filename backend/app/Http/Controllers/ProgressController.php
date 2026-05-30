@@ -12,6 +12,7 @@ use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Validator;
 use Illuminate\Validation\Rule;
 use App\Services\LearningGateService;
+use App\Actions\Certificates\IssueCertificateAction;
 
 class ProgressController extends Controller
 {
@@ -214,9 +215,12 @@ class ProgressController extends Controller
             ]
         );
 
+        $certificate = app(IssueCertificateAction::class)->execute($targetUser, $lesson->module->course);
+
         return response()->json([
             'message' => 'Lesson marked as completed',
-            'progress' => $progress->load(['user', 'lesson.module.course'])
+            'progress' => $progress->load(['user', 'lesson.module.course']),
+            'certificate' => $certificate?->load(['course']),
         ]);
     }
 

@@ -8,7 +8,7 @@ const checks = [
   ['src/app/dashboard/courses/[courseId]/quiz/[quizId]/QuizClient.tsx', 'Soumettre le quiz'],
   ['src/app/dashboard/exercises/page.tsx', 'Générer un nouvel exercice'],
   ['src/app/dashboard/exams/page.tsx', 'Démarrer un examen blanc'],
-  ['src/app/dashboard/planning/page.tsx', 'Optimiser mon planning'],
+  ['src/app/dashboard/planning/page.tsx', 'Planning des classes virtuelles'],
   ['src/app/dashboard/profile/page.tsx', 'Profil & statistiques'],
 ];
 

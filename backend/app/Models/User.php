@@ -106,4 +106,9 @@ class User extends Authenticatable
         return $this->hasMany(Certificate::class);
     }
 
+    public function liveSessionsCreated()
+    {
+        return $this->hasMany(LiveSession::class, 'created_by');
+    }
+
 }

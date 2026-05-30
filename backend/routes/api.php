@@ -6,6 +6,7 @@ use App\Http\Controllers\Course\CourseController;
 use App\Http\Controllers\Course\EnrollmentController;
 use App\Http\Controllers\Course\LessonController;
 use App\Http\Controllers\Course\ModuleController;
+use App\Http\Controllers\Live\LiveSessionController;
 use App\Http\Controllers\Live\VideoConferenceController;
 use App\Http\Controllers\ProgressController;
 use App\Http\Controllers\Quiz\AnswersController;
@@ -51,6 +52,14 @@ Route::middleware(['auth:sanctum'])->group(function (): void {
     Route::post('courses/{course}/enroll', [EnrollmentController::class, 'store']);
     Route::delete('courses/{course}/enroll', [CourseController::class, 'unenroll']);
     Route::get('courses/{course}/enrollment/check', [EnrollmentController::class, 'checkEnrollment']);
+    Route::get('courses/{course}/live-sessions', [LiveSessionController::class, 'indexForCourse']);
+
+    // Live sessions and classroom chat.
+    Route::get('live-sessions/upcoming', [LiveSessionController::class, 'upcoming']);
+    Route::post('live-sessions', [LiveSessionController::class, 'store']);
+    Route::get('live-sessions/{liveSession}/join', [LiveSessionController::class, 'join']);
+    Route::get('live-sessions/{liveSession}/messages', [LiveSessionController::class, 'messages']);
+    Route::post('live-sessions/{liveSession}/messages', [LiveSessionController::class, 'storeMessage']);
 
     // Course modules.
     Route::get('courses/{course}/modules', [ModuleController::class, 'index']);

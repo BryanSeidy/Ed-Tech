@@ -5,6 +5,7 @@ import { useRouter } from 'next/navigation';
 import { ProtectedView } from '@/src/components/auth/ProtectedView';
 import { AppNav } from '@/src/components/layout/AppNav';
 import { useAuth } from '@/src/features/auth/useAuth';
+import { CertificatesPanel } from '@/src/app/dashboard/CertificatesPanel';
 
 export default function DashboardPage() {
   const { user, logout } = useAuth();
@@ -40,10 +41,7 @@ export default function DashboardPage() {
           </div>
 
           <hr className="separator" />
-          <p className="helper">
-            Les modules <strong>live</strong>, <strong>certificats</strong> et <strong>paiement</strong> sont
-            masqués dans ce MVP pour prioriser le parcours d’apprentissage.
-          </p>
+          <CertificatesPanel />
         </section>
       </main>
     </ProtectedView>

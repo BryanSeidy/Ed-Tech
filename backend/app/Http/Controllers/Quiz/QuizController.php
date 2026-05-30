@@ -7,6 +7,7 @@ use App\Models\Quiz;
 use App\Models\Question;
 use App\Models\Answer;
 use App\Models\Attempt;
+use App\Actions\Certificates\IssueCertificateAction;
 use App\Models\Lesson;
 use App\Models\Course;
 use App\Models\Progress;
@@ -502,6 +503,7 @@ class QuizController extends Controller
             'submitted_at' => now(),
         ]);
 
+        $certificate = null;
         if ($passed) {
             Progress::updateOrCreate(
                 [
@@ -513,6 +515,9 @@ class QuizController extends Controller
                     'completed_at' => now(),
                 ]
             );
+
+            $quiz->loadMissing('lesson.module.course');
+            $certificate = app(IssueCertificateAction::class)->execute($user, $quiz->lesson->module->course);
         }
 
         return response()->json([
@@ -526,6 +531,7 @@ class QuizController extends Controller
                 'passing_score' => $quiz->passing_score,
                 'passed' => $passed,
                 'percentage' => $score,
+                'certificate' => $certificate?->load(['course']),
             ],
         ], 200);
     }

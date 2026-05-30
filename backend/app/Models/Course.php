@@ -4,6 +4,7 @@ namespace App\Models;
 
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Eloquent\Relations\HasMany;
 
 class Course extends Model
 {
@@ -32,10 +33,20 @@ class Course extends Model
         return $this->hasMany(Module::class);
     }
 
-    // Sessions de classe virtuelle
-    public function sessions()
+    public function enrollments(): HasMany
     {
-        return $this->hasMany(Session::class);
+        return $this->hasMany(Enrollment::class);
+    }
+
+    public function liveSessions(): HasMany
+    {
+        return $this->hasMany(LiveSession::class);
+    }
+
+    // Alias de compatibilité pour les anciennes références aux sessions live.
+    public function sessions(): HasMany
+    {
+        return $this->liveSessions();
     }
 
     // Evaluations

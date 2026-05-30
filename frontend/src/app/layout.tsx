@@ -3,8 +3,8 @@ import '@/src/app/globals.css';
 import { AuthProvider } from '@/src/features/auth/AuthProvider';
 
 export const metadata: Metadata = {
-  title: 'ED-TECH | Plateforme e-learning juridique',
-  description: 'Plateforme e-learning interactive pour étudiants en droit.',
+  title: 'ED-TECH | Plateforme e-learning certifiant',
+  description: 'Plateforme e-learning interactive pour réussir vos études.',
 };
 
 export default function RootLayout({ children }: Readonly<{ children: React.ReactNode }>) {

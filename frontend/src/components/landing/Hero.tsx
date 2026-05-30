@@ -6,15 +6,15 @@ export function Hero() {
     <section className="py-16 md:py-24">
       <div className="max-w-7xl mx-auto px-4 md:px-6 grid grid-cols-1 md:grid-cols-2 gap-6 items-center">
         <div className="space-y-6 animate-in-up">
-          <p className="inline-flex rounded-full border border-[var(--border)] bg-[var(--secondary)] px-3 py-1 text-xs font-semibold text-[var(--muted)]">
-            Plateforme juridique interactive
+          <p className="inline-flex rounded-full border border-(--border) bg-(--secondary) px-3 py-1 text-xs font-semibold text-(--muted)">
+            Plateforme d'apprentissage certifiant
           </p>
-          <h1 className="text-4xl md:text-5xl font-bold text-[var(--foreground)] leading-tight">
-            Autonomiser les esprits juridiques grâce à une éducation interactive en ligne
+          <h1 className="text-4xl md:text-5xl font-bold text-(--foreground) leading-tight">
+            Réussissez vos études ou accélérez votre reconversion avec des cours structurés, des classes virtuelles
+            collaboratives, des quiz exigeants et une certification automatisée prête à valoriser votre profil.
           </h1>
-          <p className="text-[var(--muted)] text-base md:text-lg">
-            Élevez votre parcours juridique en apprenant en ligne pour les étudiants en droit. Débloquez le monde du
-            droit Apprenez, appliquez, réussissez
+          <p className="text-(--muted) text-base md:text-lg">
+            Accédez à des cours de qualité, des quiz exigeants et une certification automatisée prête à valoriser votre profil.
           </p>
           <div className="flex flex-wrap gap-3 animate-in-up delay-2">
             <Button ariaLabel="Commencer" href="/auth/register" variant="primary">
@@ -27,9 +27,9 @@ export function Hero() {
         </div>
 
         <div className="relative animate-in-up delay-3">
-          <div className="absolute -left-4 -top-4 h-16 w-16 rounded-full bg-[var(--secondary)]" />
-          <div className="absolute -right-3 bottom-8 h-8 w-8 rounded-full bg-[var(--accent)]/70" />
-          <div className="relative overflow-hidden rounded-3xl border border-[var(--border)] bg-[var(--card)] p-2">
+          <div className="absolute -left-4 -top-4 h-16 w-16 rounded-full bg-(--secondary)" />
+          <div className="absolute -right-3 bottom-8 h-8 w-8 rounded-full bg-(--accent)/70" />
+          <div className="relative overflow-hidden rounded-3xl border border-(--border) bg-(--card) p-2">
             <Image
               alt="Deux étudiantes diplômées"
               className="h-auto w-full rounded-2xl object-cover"

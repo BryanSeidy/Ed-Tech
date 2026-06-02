@@ -1,4 +1,5 @@
 @import "tailwindcss" source(none);
+@custom-variant dark (&:where(.dark, .dark *));
 @source "../**/*.ts";
 @source "../**/*.tsx";
 
@@ -10,7 +11,15 @@
   --color-edtech-slate: #f6f9fc;
   --color-edtech-muted: #5f6f86;
   --color-edtech-border: #dbe5f0;
+  --color-primary: #2563eb;
+  --color-secondary: #0ea5e9;
+  --color-background: #f8fafc;
+  --color-foreground: #0f172a;
+  --color-surface: #ffffff;
+  --color-muted: #64748b;
+  --color-border: #e2e8f0;
 }
+
 
 :root {
   color-scheme: light;

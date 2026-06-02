@@ -8,14 +8,14 @@ import { BellIcon, BookIcon, CertificateIcon, DashboardIcon, SettingsIcon, Video
 import { cn } from '@/src/lib/cn';
 
 const topbarLinks = [
-  { href: '/dashboard', label: 'Tableau de bord' },
+  { href: '/dashboard/student', label: 'Tableau de bord' },
   { href: '/dashboard/courses', label: 'Catalogue' },
   { href: '/dashboard/planning', label: 'Classes Virtuelles' },
   { href: '/dashboard/profile', label: 'Mon Profil' },
 ];
 
 const sidebarLinks = [
-  { href: '/dashboard', label: "Vue d'ensemble", icon: DashboardIcon },
+  { href: '/dashboard/student', label: "Vue d'ensemble", icon: DashboardIcon },
   { href: '/dashboard/courses', label: 'Mes Cours Suivis', icon: BookIcon },
   { href: '/dashboard/planning', label: 'Prochains Lives', icon: VideoIcon },
   { href: '/dashboard/profile', label: 'Mes Certificats Reçus', icon: CertificateIcon },
@@ -29,7 +29,7 @@ type StudentDashboardShellProps = {
 
 function BrandMark() {
   return (
-    <Link href="/dashboard" className="group inline-flex items-center gap-3" aria-label="Retour au tableau de bord Ed-tech">
+    <Link href="/dashboard/student" className="group inline-flex items-center gap-3" aria-label="Retour au tableau de bord Ed-tech">
       <span className="grid size-10 place-items-center rounded-2xl bg-primary text-sm font-bold text-white transition group-hover:-translate-y-0.5 group-hover:bg-primary/90 dark:bg-primary">
         E
       </span>

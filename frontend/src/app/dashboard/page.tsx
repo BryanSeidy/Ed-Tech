@@ -1,49 +1,34 @@
 'use client';
 
-import Link from 'next/link';
 import { useRouter } from 'next/navigation';
+import { useEffect } from 'react';
 import { ProtectedView } from '@/src/components/auth/ProtectedView';
-import { AppNav } from '@/src/components/layout/AppNav';
+import { getRoleDashboardRoute } from '@/src/features/auth/roleRoutes';
 import { useAuth } from '@/src/features/auth/useAuth';
-import { CertificatesPanel } from '@/src/app/dashboard/CertificatesPanel';
 
-export default function DashboardPage() {
-  const { user, logout } = useAuth();
+function RoleDashboardRedirect() {
+  const { user } = useAuth();
   const router = useRouter();
 
-  async function handleLogout() {
-    await logout();
-    router.push('/auth/login');
-  }
+  useEffect(() => {
+    if (user) {
+      router.replace(getRoleDashboardRoute(user.role));
+    }
+  }, [router, user]);
 
   return (
+    <main className="auth-shell">
+      <section className="card">
+        <p>Redirection vers votre espace personnalisé...</p>
+      </section>
+    </main>
+  );
+}
+
+export default function DashboardIndexPage() {
+  return (
     <ProtectedView>
-      <main className="page-shell">
-        <AppNav />
-        <section className="card wide-card">
-          <div className="topbar">
-            <h1>Tableau de bord</h1>
-            <button className="button ghost" onClick={handleLogout} type="button">
-              Se déconnecter
-            </button>
-          </div>
-
-          <p className="success">Bienvenue {user?.name}, votre session est active.</p>
-          <p className="helper">Email: {user?.email}</p>
-
-          <div className="inline-actions mt-2">
-            <Link className="button primary" href="/dashboard/courses">
-              Voir le catalogue des cours
-            </Link>
-            <Link className="button ghost" href="/dashboard/profile">
-              Voir mon profil
-            </Link>
-          </div>
-
-          <hr className="separator" />
-          <CertificatesPanel />
-        </section>
-      </main>
+      <RoleDashboardRedirect />
     </ProtectedView>
   );
 }

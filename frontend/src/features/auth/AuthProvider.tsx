@@ -21,6 +21,31 @@ export const AuthContext = createContext<AuthContextValue | null>(null);
 const AUTH_KEY = 'edtech_auth_user';
 const VALID_AUTH_ROLES = new Set<AuthUser['role']>(['student', 'instructor', 'admin']);
 
+function isAuthUser(value: unknown): value is AuthUser {
+  if (!value || typeof value !== 'object') {
+    return false;
+  }
+
+  const candidate = value as Partial<AuthUser>;
+
+  return (
+    typeof candidate.id === 'number' &&
+    typeof candidate.name === 'string' &&
+    typeof candidate.email === 'string' &&
+    Boolean(candidate.role && VALID_AUTH_ROLES.has(candidate.role))
+  );
+}
+
+function clearCachedUser(): void {
+  if (typeof window !== 'undefined') {
+    window.localStorage.removeItem(AUTH_KEY);
+  }
+}
+
+function cacheUser(nextUser: AuthUser): void {
+  window.localStorage.setItem(AUTH_KEY, JSON.stringify(nextUser));
+}
+
 function readCachedUser(): AuthUser | null {
   if (typeof window === 'undefined') {
     return null;
@@ -33,9 +58,17 @@ function readCachedUser(): AuthUser | null {
   }
 
   try {
-    return JSON.parse(raw) as AuthUser;
+    const cachedUser = JSON.parse(raw) as unknown;
+
+    if (isAuthUser(cachedUser)) {
+      return cachedUser;
+    }
+
+    clearCachedUser();
+
+    return null;
   } catch {
-    window.localStorage.removeItem(AUTH_KEY);
+    clearCachedUser();
 
     return null;
   }
@@ -44,7 +77,7 @@ function readCachedUser(): AuthUser | null {
 function extractUser(payload: { user?: AuthUser; data?: AuthUser }): AuthUser {
   const user = payload.user ?? payload.data;
 
-  if (!user || !VALID_AUTH_ROLES.has(user.role)) {
+  if (!isAuthUser(user)) {
     throw new Error('Réponse utilisateur invalide.');
   }
 
@@ -62,7 +95,7 @@ export function AuthProvider({ children }: Readonly<{ children: React.ReactNode 
 
     function handleUnauthorized() {
       setUser(null);
-      window.localStorage.removeItem(AUTH_KEY);
+      clearCachedUser();
     }
 
     window.addEventListener(AUTH_UNAUTHORIZED_EVENT, handleUnauthorized);
@@ -77,13 +110,14 @@ export function AuthProvider({ children }: Readonly<{ children: React.ReactNode 
         }
 
         setUser(nextUser);
-        window.localStorage.setItem(AUTH_KEY, JSON.stringify(nextUser));
+        cacheUser(nextUser);
       } catch {
         if (!mounted) {
           return;
         }
 
-        setUser(readCachedUser());
+        clearCachedUser();
+        setUser(null);
       } finally {
         if (mounted) {
           setIsLoading(false);
@@ -115,14 +149,14 @@ export function AuthProvider({ children }: Readonly<{ children: React.ReactNode 
     const response = await authApi.me();
     const nextUser = extractUser(response);
     setUser(nextUser);
-    window.localStorage.setItem(AUTH_KEY, JSON.stringify(nextUser));
+    cacheUser(nextUser);
   }, []);
 
   const login = useCallback(async (payload: LoginPayload) => {
     const response = await authApi.login(payload);
     const nextUser = extractUser(response);
     setUser(nextUser);
-    window.localStorage.setItem(AUTH_KEY, JSON.stringify(nextUser));
+    cacheUser(nextUser);
 
     return nextUser;
   }, []);
@@ -131,7 +165,7 @@ export function AuthProvider({ children }: Readonly<{ children: React.ReactNode 
     const response = await authApi.register(payload);
     const nextUser = extractUser(response);
     setUser(nextUser);
-    window.localStorage.setItem(AUTH_KEY, JSON.stringify(nextUser));
+    cacheUser(nextUser);
 
     return nextUser;
   }, []);
@@ -139,7 +173,7 @@ export function AuthProvider({ children }: Readonly<{ children: React.ReactNode 
   const logout = useCallback(async () => {
     await authApi.logout();
     setUser(null);
-    window.localStorage.removeItem(AUTH_KEY);
+    clearCachedUser();
   }, []);
 
   const value = useMemo(

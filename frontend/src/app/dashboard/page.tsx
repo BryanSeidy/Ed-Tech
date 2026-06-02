@@ -1,7 +1,5 @@
 'use client';
 
-import { redirect } from 'next/navigation';
-
 import { useRouter } from 'next/navigation';
 import { useEffect } from 'react';
 import { ProtectedView } from '@/src/components/auth/ProtectedView';

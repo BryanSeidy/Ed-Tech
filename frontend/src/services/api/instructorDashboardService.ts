@@ -1,17 +1,4 @@
-import { cookies } from 'next/headers';
-import { redirect } from 'next/navigation';
-import { getRoleDashboardRoute } from '@/src/features/auth/roleRoutes';
-import type { AuthResponse, AuthUser } from '@/src/features/auth/types';
-
-const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL ?? 'http://localhost:8000/api';
-
-type ApiEnvelope<T> = {
-  data: T;
-};
-
-type ApiErrorShape = {
-  message?: string;
-};
+import { http } from '@/src/lib/http';
 
 export type InstructorStats = {
   total_students: number;
@@ -47,57 +34,31 @@ export type InstructorLiveSession = {
   can_start: boolean;
 };
 
-async function serverApi<T>(path: string): Promise<T> {
-  const cookieHeader = (await cookies()).toString();
-  const response = await fetch(`${API_BASE_URL}${path}`, {
-    credentials: 'include',
-    cache: 'no-store',
-    headers: {
-      Accept: 'application/json',
-      Cookie: cookieHeader,
-    },
-  });
+type ApiEnvelope<T> = {
+  data: T;
+};
 
-  if (response.status === 401) {
-    redirect('/auth/login');
-  }
+export type InstructorDashboardData = {
+  stats: InstructorStats;
+  courses: InstructorCourse[];
+  liveSessions: InstructorLiveSession[];
+};
 
-  const payload = (await response.json().catch(() => ({}))) as T & ApiErrorShape;
+export const instructorDashboardService = {
+  stats: () => http<ApiEnvelope<InstructorStats>>('/instructor/stats'),
+  courses: () => http<ApiEnvelope<InstructorCourse[]>>('/instructor/courses'),
+  liveSessions: () => http<ApiEnvelope<InstructorLiveSession[]>>('/instructor/live-sessions'),
+  async dashboard(): Promise<InstructorDashboardData> {
+    const [statsResponse, coursesResponse, liveSessionsResponse] = await Promise.all([
+      this.stats(),
+      this.courses(),
+      this.liveSessions(),
+    ]);
 
-  if (!response.ok) {
-    throw new Error(payload.message ?? 'Impossible de charger les données du dashboard formateur.');
-  }
-
-  return payload;
-}
-
-async function getAuthenticatedUser(): Promise<AuthUser> {
-  const response = await serverApi<AuthResponse>('/auth/me');
-  const user = response.user ?? response.data;
-
-  if (!user) {
-    redirect('/auth/login');
-  }
-
-  if (user.role !== 'instructor') {
-    redirect(getRoleDashboardRoute(user.role));
-  }
-
-  return user;
-}
-
-export async function getInstructorDashboardData() {
-  const user = await getAuthenticatedUser();
-  const [statsResponse, coursesResponse, liveSessionsResponse] = await Promise.all([
-    serverApi<ApiEnvelope<InstructorStats>>('/instructor/stats'),
-    serverApi<ApiEnvelope<InstructorCourse[]>>('/instructor/courses'),
-    serverApi<ApiEnvelope<InstructorLiveSession[]>>('/instructor/live-sessions'),
-  ]);
-
-  return {
-    user,
-    stats: statsResponse.data,
-    courses: coursesResponse.data,
-    liveSessions: liveSessionsResponse.data,
-  };
-}
+    return {
+      stats: statsResponse.data,
+      courses: coursesResponse.data,
+      liveSessions: liveSessionsResponse.data,
+    };
+  },
+};

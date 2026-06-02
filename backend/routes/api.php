@@ -7,6 +7,7 @@ use App\Http\Controllers\Course\EnrollmentController;
 use App\Http\Controllers\Course\LessonController;
 use App\Http\Controllers\Course\ModuleController;
 use App\Http\Controllers\Live\LiveSessionController;
+use App\Http\Controllers\InstructorDashboardController;
 use App\Http\Controllers\Live\VideoConferenceController;
 use App\Http\Controllers\ProgressController;
 use App\Http\Controllers\Quiz\AnswersController;
@@ -40,6 +41,11 @@ Route::middleware(['auth:sanctum'])->group(function (): void {
     Route::get('my-enrollments', [UserController::class, 'myEnrollments']);
     Route::get('my-certificates', [UserController::class, 'myCertificates']);
     Route::get('my-statistics', [UserController::class, 'myStatistics']);
+
+    // Instructor dashboard metrics and resources.
+    Route::get('instructor/stats', [InstructorDashboardController::class, 'stats']);
+    Route::get('instructor/courses', [InstructorDashboardController::class, 'courses']);
+    Route::get('instructor/live-sessions', [InstructorDashboardController::class, 'liveSessions']);
 
     // Course catalogue, instructor course management, and learner enrollment.
     Route::get('courses', [CourseController::class, 'index']);

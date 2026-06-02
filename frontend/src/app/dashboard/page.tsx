@@ -1,11 +1,15 @@
 'use client';
 
-import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import { ProtectedView } from '@/src/components/auth/ProtectedView';
-import { AppNav } from '@/src/components/layout/AppNav';
+import { CertificateWall } from '@/src/components/dashboard/CertificateWall';
+import { CourseProgressBars } from '@/src/components/dashboard/CourseProgressBars';
+import { LiveClassCard } from '@/src/components/dashboard/LiveClassCard';
+import { QuizEvaluationCard } from '@/src/components/dashboard/QuizEvaluationCard';
+import { StudentDashboardShell } from '@/src/components/dashboard/StudentDashboardShell';
+import { WelcomeResumeCard } from '@/src/components/dashboard/WelcomeResumeCard';
 import { useAuth } from '@/src/features/auth/useAuth';
-import { CertificatesPanel } from '@/src/app/dashboard/CertificatesPanel';
+import { learningStats, nextLiveClass, studentCertificates, studentCourses, studentQuizzes } from '@/src/data/mockStudentData';
 
 export default function DashboardPage() {
   const { user, logout } = useAuth();
@@ -18,32 +22,13 @@ export default function DashboardPage() {
 
   return (
     <ProtectedView>
-      <main className="page-shell">
-        <AppNav />
-        <section className="card wide-card">
-          <div className="topbar">
-            <h1>Tableau de bord</h1>
-            <button className="button ghost" onClick={handleLogout} type="button">
-              Se déconnecter
-            </button>
-          </div>
-
-          <p className="success">Bienvenue {user?.name}, votre session est active.</p>
-          <p className="helper">Email: {user?.email}</p>
-
-          <div className="inline-actions mt-2">
-            <Link className="button primary" href="/dashboard/courses">
-              Voir le catalogue des cours
-            </Link>
-            <Link className="button ghost" href="/dashboard/profile">
-              Voir mon profil
-            </Link>
-          </div>
-
-          <hr className="separator" />
-          <CertificatesPanel />
-        </section>
-      </main>
+      <StudentDashboardShell userName={user?.name ?? 'Étudiant'} onLogout={handleLogout}>
+        <WelcomeResumeCard userName={user?.name ?? 'Étudiant'} stats={learningStats} />
+        <LiveClassCard liveClass={nextLiveClass} />
+        <QuizEvaluationCard quizzes={studentQuizzes} />
+        <CourseProgressBars courses={studentCourses} />
+        <CertificateWall certificates={studentCertificates} />
+      </StudentDashboardShell>
     </ProtectedView>
   );
 }

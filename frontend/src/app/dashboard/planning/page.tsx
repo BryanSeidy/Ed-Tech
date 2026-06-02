@@ -70,6 +70,7 @@ export default function PlanningPage() {
   useEffect(() => {
     if (!user) return;
 
+    // eslint-disable-next-line react-hooks/set-state-in-effect
     void loadPlanning();
     const interval = window.setInterval(() => void loadPlanning(), 60_000);
 

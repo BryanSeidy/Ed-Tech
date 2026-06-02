@@ -21,7 +21,7 @@ export default function DashboardPage() {
   }
 
   return (
-    <ProtectedView>
+    <ProtectedView allowedRoles={['student']}>
       <StudentDashboardShell userName={user?.name ?? 'Étudiant'} onLogout={handleLogout}>
         <WelcomeResumeCard userName={user?.name ?? 'Étudiant'} stats={learningStats} />
         <LiveClassCard liveClass={nextLiveClass} />

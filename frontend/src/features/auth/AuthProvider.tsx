@@ -1,15 +1,17 @@
 'use client';
 
+import { usePathname, useRouter } from 'next/navigation';
 import { createContext, useCallback, useEffect, useMemo, useState } from 'react';
 import { authApi } from '@/src/features/auth/authApi';
+import { getDashboardRoleFromPathname, getRoleDashboardRoute } from '@/src/features/auth/roleRoutes';
 import { AUTH_UNAUTHORIZED_EVENT } from '@/src/lib/http';
 import type { AuthUser, LoginPayload, RegisterPayload } from '@/src/features/auth/types';
 
 type AuthContextValue = {
   user: AuthUser | null;
   isLoading: boolean;
-  login: (payload: LoginPayload) => Promise<void>;
-  register: (payload: RegisterPayload) => Promise<void>;
+  login: (payload: LoginPayload) => Promise<AuthUser>;
+  register: (payload: RegisterPayload) => Promise<AuthUser>;
   logout: () => Promise<void>;
   refresh: () => Promise<void>;
 };
@@ -17,6 +19,7 @@ type AuthContextValue = {
 export const AuthContext = createContext<AuthContextValue | null>(null);
 
 const AUTH_KEY = 'edtech_auth_user';
+const VALID_AUTH_ROLES = new Set<AuthUser['role']>(['student', 'instructor', 'admin']);
 
 function readCachedUser(): AuthUser | null {
   if (typeof window === 'undefined') {
@@ -41,7 +44,7 @@ function readCachedUser(): AuthUser | null {
 function extractUser(payload: { user?: AuthUser; data?: AuthUser }): AuthUser {
   const user = payload.user ?? payload.data;
 
-  if (!user) {
+  if (!user || !VALID_AUTH_ROLES.has(user.role)) {
     throw new Error('Réponse utilisateur invalide.');
   }
 
@@ -51,6 +54,8 @@ function extractUser(payload: { user?: AuthUser; data?: AuthUser }): AuthUser {
 export function AuthProvider({ children }: Readonly<{ children: React.ReactNode }>) {
   const [user, setUser] = useState<AuthUser | null>(() => readCachedUser());
   const [isLoading, setIsLoading] = useState<boolean>(true);
+  const pathname = usePathname();
+  const router = useRouter();
 
   useEffect(() => {
     let mounted = true;
@@ -92,6 +97,20 @@ export function AuthProvider({ children }: Readonly<{ children: React.ReactNode 
     };
   }, []);
 
+  useEffect(() => {
+    if (isLoading || !user) {
+      return;
+    }
+
+    const expectedDashboardRoute = getRoleDashboardRoute(user.role);
+    const requestedDashboardRole = getDashboardRoleFromPathname(pathname);
+    const isAuthRoute = pathname === '/auth/login' || pathname === '/auth/register';
+
+    if (pathname === '/dashboard' || isAuthRoute || (requestedDashboardRole && requestedDashboardRole !== user.role)) {
+      router.replace(expectedDashboardRoute);
+    }
+  }, [isLoading, pathname, router, user]);
+
   const refresh = useCallback(async () => {
     const response = await authApi.me();
     const nextUser = extractUser(response);
@@ -104,6 +123,8 @@ export function AuthProvider({ children }: Readonly<{ children: React.ReactNode 
     const nextUser = extractUser(response);
     setUser(nextUser);
     window.localStorage.setItem(AUTH_KEY, JSON.stringify(nextUser));
+
+    return nextUser;
   }, []);
 
   const register = useCallback(async (payload: RegisterPayload) => {
@@ -111,6 +132,8 @@ export function AuthProvider({ children }: Readonly<{ children: React.ReactNode 
     const nextUser = extractUser(response);
     setUser(nextUser);
     window.localStorage.setItem(AUTH_KEY, JSON.stringify(nextUser));
+
+    return nextUser;
   }, []);
 
   const logout = useCallback(async () => {

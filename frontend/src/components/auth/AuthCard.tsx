@@ -3,6 +3,7 @@
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import { FormEvent, useMemo, useState } from 'react';
+import { getRoleDashboardRoute } from '@/src/features/auth/roleRoutes';
 import { HttpError } from '@/src/lib/http';
 import type { UserRole } from '@/src/features/auth/types';
 import { useAuth } from '@/src/features/auth/useAuth';
@@ -41,12 +42,11 @@ export function AuthCard({ mode }: Readonly<{ mode: Mode }>) {
 
     try {
       setIsSubmitting(true);
-      if (isRegister) {
-        await register({ name, email, password, role });
-      } else {
-        await login({ email, password, remember });
-      }
-      router.push('/dashboard');
+      const authenticatedUser = isRegister
+        ? await register({ name, email, password, role })
+        : await login({ email, password, remember });
+
+      router.replace(getRoleDashboardRoute(authenticatedUser.role));
     } catch (err) {
       if (err instanceof HttpError) {
         setError(err.message);

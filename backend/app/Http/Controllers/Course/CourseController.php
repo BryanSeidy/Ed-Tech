@@ -233,7 +233,7 @@ class CourseController extends Controller
             return response()->json(['message' => 'Unauthorized'], 403);
         }
 
-        $course->update(['is_published' => true]);
+        $course->update(['is_published' => true, 'publication_status' => 'published']);
 
         return response()->json(['message' => 'Course published successfully']);
     }
@@ -247,7 +247,7 @@ class CourseController extends Controller
             return response()->json(['message' => 'Unauthorized'], 403);
         }
 
-        $course->update(['is_published' => false]);
+        $course->update(['is_published' => false, 'publication_status' => 'pending']);
 
         return response()->json(['message' => 'Course unpublished successfully']);
     }

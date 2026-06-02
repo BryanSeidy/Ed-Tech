@@ -1,5 +1,8 @@
 <?php
 
+use App\Http\Controllers\Admin\AdminAnalyticsController;
+use App\Http\Controllers\Admin\AdminCourseController;
+use App\Http\Controllers\Admin\AdminUserController;
 use App\Http\Controllers\Auth\AuthController;
 use App\Http\Controllers\CertificateController;
 use App\Http\Controllers\Course\CourseController;
@@ -28,6 +31,15 @@ Route::prefix('auth')->group(function (): void {
 });
 
 Route::get('certificates/verify/{certificateNumber}', [CertificateController::class, 'verifyPublic'])->middleware('throttle:30,1');
+
+
+Route::middleware(['auth:sanctum', 'role:admin'])->prefix('admin')->group(function (): void {
+    Route::get('analytics', AdminAnalyticsController::class);
+    Route::get('users', [AdminUserController::class, 'index']);
+    Route::patch('users/{user}/role', [AdminUserController::class, 'updateRole']);
+    Route::get('courses', [AdminCourseController::class, 'index']);
+    Route::patch('courses/{course}/status', [AdminCourseController::class, 'updateStatus']);
+});
 
 Route::middleware(['auth:sanctum'])->group(function (): void {
     // Authenticated user dashboard and profile.

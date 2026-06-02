@@ -16,11 +16,21 @@ class Course extends Model
         'thumbnail',
         'instructor_id',
         'is_published',
+        'publication_status',
     ];
 
     protected $casts = [
         'is_published' => 'boolean',
     ];
+
+    public function getPublicationStatusAttribute(?string $value): string
+    {
+        if ($value) {
+            return $value;
+        }
+
+        return $this->is_published ? 'published' : 'pending';
+    }
 
     // Enseignant du cours
     public function instructor()
